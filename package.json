@@ -1,0 +1,31 @@
+{
+  "name": "ai-migrator",
+  "version": "1.0.0",
+  "description": "AI migration tool for Tolgee",
+  "main": "./dist/cli.js",
+  "bin": {
+    "cli": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@azure/identity": "^4.4.1",
+    "@azure/openai": "^2.0.0-beta.2",
+    "axios": "^1.7.7",
+    "commander": "^12.1.0",
+    "dotenv": "^16.4.5",
+    "fast-glob": "^3.3.2",
+    "fs-extra": "^11.2.0",
+    "glob": "^11.0.0",
+    "openai": "^4.67.3"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  }
+}

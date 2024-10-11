@@ -1,0 +1,36 @@
+# Node modules
+node_modules/
+
+# TypeScript build output
+dist/
+
+# Environment variables file
+.env
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Ignore migrated files
+src/migrated_files/
+
+# Ignore test files
+src/test_files/
+
+# Ignore macOS system files
+.DS_Store
+
+# Ignore npm package lock file (optional)
+package-lock.json
+
+# Ignore IDE and editor config files
+.idea/
+.vscode/
+*.swp
+
+# Ignore compiled TypeScript files
+*.js
+*.d.ts
