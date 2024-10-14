@@ -20,6 +20,9 @@ src/migrated_files/
 # Ignore test files
 src/test_files/
 
+# Ignore all keys file
+src/allKeys.json
+
 # Ignore macOS system files
 .DS_Store
 
