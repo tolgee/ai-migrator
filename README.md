@@ -22,10 +22,11 @@ localization keys to Tolgee for translation management.
 - [Usage](#usage)
     - [CLI Commands](#cli-commands)
 - [Modules](#modules)
-    - [File Finder](#1-file-finder-findfilesmts)
-    - [Migration Status](#2-migration-status-migrationStatusmts)
-    - [ChatGPT Localization](#3-chatgpt-localization-chatgptmts)
-    - [Tolgee Integration](#4-tolgee-integration-tolgeemts)
+    - [File Finder](#1-file-finder-findfilests)
+    - [Migration Status](#2-migration-status-migrationStatusts)
+    - [ChatGPT Localization](#3-chatgpt-localization-chatgptts)
+    - [Tolgee Integration](#4-tolgee-integration-tolgeets)
+- [Testing](#testing)
 - [Error Handling](#error-handling)
 - [Conclusion](#conclusion)
 
@@ -282,6 +283,25 @@ const keys = [
 
 await uploadKeysToTolgee(keys);
 console.log('Keys uploaded successfully to Tolgee.');
+```
+
+<hr>
+
+### Testing
+
+This project includes unit tests to ensure the functionality of each module, such as file discovery, migration status tracking, and Tolgee API integration. We use [Jest](https://jestjs.io/) as the testing framework.
+
+#### Running Tests
+
+To run all tests, use the following command:
+
+```bash
+npm test
+```
+
+You can also run specific test files:
+```
+npm test tests/migrationStatus.test.ts
 ```
 
 <hr>

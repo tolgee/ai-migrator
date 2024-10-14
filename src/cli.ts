@@ -9,6 +9,7 @@ import fsExtra from 'fs-extra';
 const {promises: fs} = fsExtra;
 import {checkMigrationStatus, loadMigrationStatus, updateMigrationStatus} from "./migrationStatus";
 import * as path from "node:path";
+import {saveKeys} from "./saveAllKeys";
 
 type KeyObject = {
     keyName: string;
@@ -35,7 +36,6 @@ const processFile = async (file: string, status: any, allKeys: KeyObject[]) => {
 
         const {updatedContent, createdKeys} = result;
 
-        // Ensure the directory exists
         const migratedDir = 'src/migrated_files';
         await fsExtra.ensureDir(migratedDir);
 
@@ -53,6 +53,9 @@ const processFile = async (file: string, status: any, allKeys: KeyObject[]) => {
 
         // Mark the file as processed and include relevant keys
         await updateMigrationStatus(file, relevantKeys);
+
+        // Save keys to file
+        await saveKeys(file, allKeys);
 
         console.log(`Successfully processed and updated file: ${file}`);
     } catch (error) {

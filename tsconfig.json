@@ -119,7 +119,8 @@
     "jsx": "react"
   },
   "include": [
-    "src/**/*"
+    "src/**/*.ts",
+    "tests/**/*.ts"
   ],
   "exclude": [
     "src/migrated_files",

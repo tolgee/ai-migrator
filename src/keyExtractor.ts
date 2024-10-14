@@ -13,7 +13,6 @@ export const extractCreatedKeys = (keyListString: string): CreatedKey[] => {
 
     if (keyBlocks) {
         keyBlocks.forEach(block => {
-            console.log("block", block);
             // Extract the key name (before the colon)
             const keyNameMatch = block.match(/"([^"]+)":/);
             const keyName = keyNameMatch ? keyNameMatch[1] : '';

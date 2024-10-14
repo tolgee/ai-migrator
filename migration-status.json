@@ -2,20 +2,12 @@
   "src/test_files/test_file.tsx": {
     "migrated": true,
     "relevantKeys": [
-      "menu_item_translation_methods",
-      "title",
+      "header_title",
       "add_item_input_placeholder",
-      "add",
-      "delete_item_button",
-      "share",
-      "send_via_email"
-    ]
-  },
-  "src/test_files/App.tsx": {
-    "migrated": true,
-    "relevantKeys": [
-      "keyName1",
-      "keyName2"
+      "button_add",
+      "button_share",
+      "button_send_via_email",
+      "delete_item_button"
     ]
   }
 }
