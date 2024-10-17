@@ -17,8 +17,8 @@ yarn-error.log*
 # Ignore migrated files
 src/migrated_files/
 
-# Ignore all keys file
-src/allKeys.json
+# Ignore test files
+src/test_files/
 
 # Ignore macOS system files
 .DS_Store
