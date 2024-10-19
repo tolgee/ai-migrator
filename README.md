@@ -84,7 +84,13 @@ them to Tolgee.
 **Command:** `migrate`
 
 The `migrate` command processes all specified files (e.g., `.ts`, `.tsx`, etc.) in the project directory, replaces
-string literals with Tolgee’s `<T> component, and uploads the keys to Tolgee.
+string literals with Tolgee’s `<T>` component or `useTranslate` hook, and generates an `allKeys.json file containing the created localization keys.
+
+**Process Overview:**
+
+   1. The project files are overwritten with new components.
+   2. An `allKeys.json` file is generated and stored in the root of the project, containing the keys for localization.
+   3. Users can then manually review or modify both the project files and the `allKeys.json file.
 
 **Usage**
 
@@ -103,9 +109,7 @@ cli migrate [options]
         cli migrate --pattern "src/test_files/**/*.tsx"
         ```
 
-- `-u, --upload`: Automatically uploads the created localization keys to Tolgee. If not provided, the CLI will prompt
-  for
-  confirmation before uploading.
+- `-u, --upload`: Automatically uploads the created localization keys to Tolgee. If this option is **not** provided, you can upload the keys manually in a separate step using the `upload-keys command.
 
     - Example:
 
@@ -115,7 +119,7 @@ cli migrate [options]
 
 **Examples:**
 
-- Run the migration with the default file pattern and prompt before uploading:
+- Run the migration with the default file pattern and review the `allKeys.json file before uploading:
 
   ```bash
   cli migrate
@@ -125,6 +129,31 @@ cli migrate [options]
 
   ```bash
   cli migrate --pattern "src/test_files/**/*.tsx" --upload
+  ```
+
+<br>
+
+**Command:** `upload-keys`
+
+The `upload-keys` command allows you to upload the localization keys that were generated and stored in the `allKeys.json` file to the Tolgee platform. This command is run after reviewing and updating the `allKeys.json file or project files as needed.
+
+**Process Overview:**
+
+   1. Users **review and modify** the `allKeys.json` file and project files.
+   2. Once ready, run the upload-keys` command to upload the finalized localization strings to the Tolgee platform.
+
+**Usage**
+
+```bash
+cli upload-keys
+```
+
+**Examples:**
+
+- Upload keys from `allKeys.json to Tolgee after reviewing and finalizing them:
+
+  ```bash
+  cli upload-keys
   ```
 
 <br>
@@ -192,6 +221,24 @@ After linking, you can run the CLI globally:
 ```bash
 cli migrate
 ```
+
+<hr>
+
+### Complete Workflow Example
+
+   1. **Step 1:** Run the migration to process the files and generate allKeys.json.
+    
+        ```bash
+        cli migrate --pattern "src/test_files/**/*.tsx"
+        ```
+
+   2. **Step 2:** Open the project files and allKeys.json, review and make any necessary updates or changes.
+
+   3. **Step 3:** Once satisfied with the changes, upload the keys to the Tolgee platform:
+
+        ```bash
+        cli upload-keys
+        ```
 
 <hr>
 
@@ -269,20 +316,27 @@ localization setup.
 
 ### 4. Tolgee Integration (`uploadKeysToTolgee.ts`)
 
-This module uploads the localization keys to Tolgee via their REST API. It takes an array of keys and uploads them in
-the required format. Any errors during the upload process are caught and logged.
+This module is responsible for uploading the keys from the `allKeys.json` file to the Tolgee platform. You can run this step manually after the migration process to ensure that all keys are finalized before uploading.
 
 #### Example Usage:
 
 ```ts
-import {uploadKeysToTolgee} from './tolgee';
+import { uploadKeysToTolgee } from './uploadKeysToTolgee';
 
 const keys = [
-    {keyName: 'menu.item.translation', defaultValue: 'Translation'},
+    {
+        keyName: 'menu.item.translation',
+        description: 'Menu item translation',
+        translations: { en: 'Translation' },
+    },
 ];
 
-await uploadKeysToTolgee(keys);
-console.log('Keys uploaded successfully to Tolgee.');
+const result = await uploadKeysToTolgee(keys);
+if (result.success) {
+    console.log(result.message); // Logs: Keys uploaded successfully
+} else {
+    console.error(result.message); // Logs error message if upload fails
+}
 ```
 
 <hr>

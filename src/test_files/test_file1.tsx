@@ -50,7 +50,7 @@ export const Todos = () => {
     };
 
     return (
-        <div className="background-wrapper">
+        <div window.title="name" className="background-wrapper">
             <div className="example">
                 <Navbar>
                     <a href="/translation-methods">
