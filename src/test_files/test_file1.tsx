@@ -1,4 +1,4 @@
-import {FormEvent, useState} from 'react';
+import {FormEvent, useState, useEffect} from 'react';
 import {T, useTranslate} from '@tolgee/react';
 
 import {Navbar} from './components/Navbar';
@@ -48,6 +48,10 @@ export const Todos = () => {
     const onAction = (action: string) => () => {
         alert('action: ' + action);
     };
+
+  useEffect(() => {
+    window.document.title = "What to pack app";
+  }, []);
 
     return (
         <div window.title="name" className="background-wrapper">
