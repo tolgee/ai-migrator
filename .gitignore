@@ -18,7 +18,7 @@ yarn-error.log*
 src/migrated_files/
 
 # Ignore all keys file
-src/allKeys.json
+allKeys.json
 
 # Ignore macOS system files
 .DS_Store
