@@ -37,7 +37,7 @@ export const extractCreatedKeys = (keyListString: string): CreatedKey[] => {
       });
     });
   } else {
-    console.error("No key blocks found in response.");
+    console.error("[keyExtractor] No key blocks found in response.");
   }
 
   return createdKeys;

@@ -1,14 +1,13 @@
 # AI Migration Tool
 
-This tool automates the process of migrating string literals in TypeScript and TSX files to localized keys using Azure
-OpenAI's ChatGPT and Tolgee. It tracks the migration status of each file, preventing duplicate processing, and uploads
+This tool automates the process of migrating string literals in TypeScript and TSX files to localized keys using ChatGPT, compatible with both Azure OpenAI and OpenAI setups, and Tolgee. It tracks the migration status of each file, preventing duplicate processing, and uploads
 localization keys to Tolgee for translation management.
 
 ### Features
 
-- **File Discovery:** Finds .ts and .tsx files in your project directory based on a specified pattern.
-- **ChatGPT Localization:** Uses OpenAI's ChatGPT to replace string literals in React components with Tolgee's <T>
-  component.
+- **File Discovery:** Finds `.tsx` files in your project directory based on a specified pattern.
+- **ChatGPT Localization:** Uses ChatGPT, compatible with both Azure OpenAI and OpenAI setups, to replace string literals in React components with Tolgee's `<T>`
+  component or `useTranslate` hook.
 - **Migration Status Tracking:** Saves and loads the migration status from a JSON file, ensuring that files are
   processed only once.
 - **Tolgee Integration:** Uploads the created localization keys to the Tolgee platform via its REST API.
@@ -34,22 +33,41 @@ localization keys to Tolgee for translation management.
 
 ### Installation
 
+#### Option 1: Run Directly with `npx`
+If you prefer not to install the tool globally, you can run it directly using `npx`:
+
+```bash
+npx cli migrate [options]
+```
+
+#### Option 2: Clone and Install Locally
+
 1. **Clone the repository:**
+   
    ```bash
    git clone https://github.com/tolgee/ai-migrator
    cd ai-migrator
    ```
+   
 2. **Install the dependencies:**
+
    ```bash
    npm install
    ```
-3. **Set up environment variables:** Create a `.env` file in the root of the project and add your Azure OpenAI API key,
-   endpoint, and deployment details:
+   
+3. **Set up environment variables:** Create a `.env` file in the root of the project and add your Azure OpenAI API key, endpoint, and deployment details. If you're using OpenAI directly instead of Azure, include the OpenAI API key and endpoint as well:
+
     ```bash
+    # Azure OpenAI setup (if using Azure)
     AZURE_OPENAI_API_KEY=your-azure-openai-api-key-here
     AZURE_OPENAI_ENDPOINT=https://your-azure-endpoint-url
     AZURE_OPENAI_DEPLOYMENT=gpt-4o
+   
+    # OpenAI setup (if using OpenAI directly)
+    OPENAI_API_KEY=your-openai-api-key-here
+    OPENAI_ENDPOINT=https://api.openai.com/v1/chat/completions
     ```
+   
 4. **Build the project:** This project is written in TypeScript, so you need to compile it to JavaScript before running
    the
    commands:
@@ -67,10 +85,17 @@ localization keys to Tolgee for translation management.
 
 ### Environment Variables
 
-- **AZURE_OPENAI_API_KEY**: The API key for OpenAI, required for interacting with the ChatGPT API.
-- **AZURE_OPENAI_ENDPOINT**: The endpoint URL for your Azure OpenAI instance, used to send API requests to Azure OpenAI.
-- **AZURE_OPENAI_DEPLOYMENT**: The name of the OpenAI model deployment in Azure, used to specify which model (e.g.,
+For this tool, you can configure either Azure OpenAI or OpenAI directly. Set the appropriate environment variables based on the setup you're using.
+
+**For Azure OpenAI:**
+- **AZURE_OPENAI_API_KEY:** The API key for OpenAI, required for interacting with the ChatGPT API.
+- **AZURE_OPENAI_ENDPOINT:** The endpoint URL for your Azure OpenAI instance, used to send API requests to Azure OpenAI.
+- **AZURE_OPENAI_DEPLOYMENT:** The name of the OpenAI model deployment in Azure, used to specify which model (e.g.,
   gpt-4o) is being used.
+
+**For OpenAI:**
+- **OPENAI_API_KEY:** The API key for OpenAI, required for accessing OpenAI’s ChatGPT API.
+- **OPENAI_ENDPOINT:** The endpoint URL for OpenAI, typically https://api.openai.com/v1/chat/completions.
 
 <hr>
 
@@ -83,14 +108,14 @@ them to Tolgee.
 
 **Command:** `migrate`
 
-The `migrate` command processes all specified files (e.g., `.ts`, `.tsx`, etc.) in the project directory, replaces
-string literals with Tolgee’s `<T>` component or `useTranslate` hook, and generates an `allKeys.json file containing the created localization keys.
+The `migrate` command processes `.tsx` files in the project directory, replaces
+string literals with Tolgee’s `<T>` component or `useTranslate` hook, and generates an `allKeys.json` file containing the created localization keys.
 
 **Process Overview:**
 
    1. The project files are overwritten with new components.
    2. An `allKeys.json` file is generated and stored in the root of the project, containing the keys for localization.
-   3. Users can then manually review or modify both the project files and the `allKeys.json file.
+   3. Users can then manually review or modify both the project files and the `allKeys.json` file.
 
 **Usage**
 
@@ -100,8 +125,7 @@ cli migrate [options]
 
 **Options**
 
-- `-p, --pattern <pattern>`: Defines the file pattern to search for files to process. The default pattern is src/**/*
-  .tsx`.
+- `-p, --pattern <pattern>`: Defines the file pattern to search for files to process. The default pattern is `src/**/*.tsx`.
 
     - Example:
 
@@ -109,7 +133,7 @@ cli migrate [options]
         cli migrate --pattern "src/test_files/**/*.tsx"
         ```
 
-- `-u, --upload`: Automatically uploads the created localization keys to Tolgee. If this option is **not** provided, you can upload the keys manually in a separate step using the `upload-keys command.
+- `-u, --upload`: Automatically uploads the created localization keys to Tolgee. If this option is **not** provided, you can upload the keys manually in a separate step using the `upload-keys` command.
 
     - Example:
 
@@ -117,9 +141,17 @@ cli migrate [options]
         cli migrate --upload
         ```
 
+- `-a, --appendixPath <appendixPath>`: Specifies the path to a file containing custom instructions (prompt appendix) for ChatGPT. This allows you to provide additional context or guidelines for the migration process.
+
+    - Example:
+
+        ```bash
+        cli migrate --appendixPath "./path/to/instructions.txt"
+        ```
+
 **Examples:**
 
-- Run the migration with the default file pattern and review the `allKeys.json file before uploading:
+- Run the migration with the default file pattern and review the `allKeys.json` file before uploading:
 
   ```bash
   cli migrate
@@ -131,11 +163,23 @@ cli migrate [options]
   cli migrate --pattern "src/test_files/**/*.tsx" --upload
   ```
 
+- Run the migration with a custom prompt appendix for ChatGPT, using the default file pattern:
+
+  ```bash
+  cli migrate --appendixPath "./path/to/instructions.txt"
+  ```
+  
+- Run the migration with a specific file pattern, automatically upload the keys, and use a custom prompt appendix:
+
+  ```bash
+  cli migrate --pattern "src/test_files/**/*.tsx" --upload --appendixPath "./path/to/instructions.txt"
+  ```
+ 
 <br>
 
 **Command:** `upload-keys`
 
-The `upload-keys` command allows you to upload the localization keys that were generated and stored in the `allKeys.json` file to the Tolgee platform. This command is run after reviewing and updating the `allKeys.json file or project files as needed.
+The `upload-keys` command allows you to upload the localization keys that were generated and stored in the `allKeys.json` file to the Tolgee platform. This command is run after reviewing and updating the `allKeys.json` file or project files as needed.
 
 **Process Overview:**
 
@@ -150,7 +194,7 @@ cli upload-keys
 
 **Examples:**
 
-- Upload keys from `allKeys.json to Tolgee after reviewing and finalizing them:
+- Upload keys from `allKeys.json` to Tolgee after reviewing and finalizing them:
 
   ```bash
   cli upload-keys
@@ -207,7 +251,7 @@ cli status [file] [options]
 You can run the CLI directly using npx without global installation:
 
 ```bash
-npx ts-node --esm src/cli.ts migrate
+npx cli migrate
 ```
 
 Or, for a more convenient setup, you can link the package globally using:
@@ -226,13 +270,13 @@ cli migrate
 
 ### Complete Workflow Example
 
-   1. **Step 1:** Run the migration to process the files and generate allKeys.json.
+   1. **Step 1:** Run the migration to process the files and generate `allKeys.json`.
     
         ```bash
         cli migrate --pattern "src/test_files/**/*.tsx"
         ```
 
-   2. **Step 2:** Open the project files and allKeys.json, review and make any necessary updates or changes.
+   2. **Step 2:** Open the project files and `allKeys.json`, review and make any necessary updates or changes.
 
    3. **Step 3:** Once satisfied with the changes, upload the keys to the Tolgee platform:
 
@@ -254,7 +298,7 @@ returns a list of file paths that match the pattern.
 ```ts
 import {findFiles} from './findFiles';
 
-const files = await findFiles('src/**/*.{ts,tsx}');
+const files = await findFiles('src/**/*.tsx');
 console.log('Files found:', files);
 ```
 
@@ -289,8 +333,8 @@ await checkMigrationStatus("", true);
 
 ### 3. ChatGPT Localization (`chatGPT.ts`)
 
-This module communicates with Azure OpenAI (ChatGPT) to process file contents. It sends the content of various file
-types (e.g., .ts, .tsx, etc.) to ChatGPT, requesting that string literals be replaced with the Tolgee <T> component. The
+This module communicates with ChatGPT, using either Azure OpenAI or OpenAI setup, to process `.tsx` file contents, primarily for React components. It sends the content of `.tsx` files
+to ChatGPT, requesting that string literals be replaced with the Tolgee `<T>` component or `useTranslate` hook. The
 function returns the updated file content and the list of created localization keys.
 
 #### Example Usage:
@@ -307,7 +351,7 @@ console.log('Created Keys:', createdKeys);
 
 #### Extracting Keys
 
-The `extractCreatedKeys` function parses the response from Azure OpenAI (ChatGPT) to extract localization keys,
+The `extractCreatedKeys` function parses the response from ChatGPT, using either Azure OpenAI or OpenAI setup, to extract localization keys,
 descriptions, and translations. This allows for more robust handling of the response structure and ensures that the
 correct format is returned. The key names, descriptions, and default values are returned as part of the final
 localization setup.
@@ -374,7 +418,5 @@ Each module includes error handling for improved reliability:
 
 ### Conclusion
 
-This tool automates the migration of string literals in TypeScript/TSX files to localized keys using Azure OpenAI's
-ChatGPT
-and Tolgee. It is designed for ease of use, tracking migration status to prevent duplicate processing, and integration
+This tool automates the migration of string literals in TypeScript/TSX files to localized keys using ChatGPT, through either Azure OpenAI or OpenAI setup, and Tolgee. It is designed for ease of use, tracking migration status to prevent duplicate processing, and integration
 with the Tolgee platform for seamless localization management.
