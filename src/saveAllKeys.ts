@@ -16,7 +16,12 @@ export const saveKeys = async (filePath: string, keys: KeyObject[]) => {
     const fileExists = await fsExtra.pathExists(allKeysFilePath);
 
     if (fileExists) {
-      allKeys = await fsExtra.readJson(allKeysFilePath);
+      try {
+        allKeys = await fsExtra.readJson(allKeysFilePath);
+      } catch (error) {
+        console.warn("[saveKeys] Warning: allKeys.json is empty or malformed. Initializing as empty object.");
+        allKeys = {};
+      }
     } else {
       await fsExtra.writeJson(allKeysFilePath, allKeys, { spaces: 2 });
     }

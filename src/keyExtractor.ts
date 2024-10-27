@@ -8,36 +8,35 @@ export interface CreatedKey {
 export const extractCreatedKeys = (keyListString: string): CreatedKey[] => {
   const createdKeys: CreatedKey[] = [];
 
-  // Match each key block, which consists of a key name and its associated content inside curly braces
-  const keyBlocks = keyListString.match(/"([^"]+)":\s*{([^}]+)}/g);
-
-  if (keyBlocks) {
-    keyBlocks.forEach((block) => {
-      // Extract the key name (before the colon)
-      const keyNameMatch = block.match(/"([^"]+)":/);
-      const keyName = keyNameMatch ? keyNameMatch[1] : "";
-
-      // Extract the description
-      const descriptionMatch = block.match(/"description":\s*"([^"]+)"/);
-      const description = descriptionMatch
-        ? descriptionMatch[1]
-        : "No description provided";
-
-      // Extract the English translation
-      const translationsMatch = block.match(/"en":\s*"([^"]+)"/);
-      const enTranslation = translationsMatch
-        ? translationsMatch[1]
-        : "No translation provided";
-
-      // Add the parsed data to the createdKeys array
-      createdKeys.push({
-        keyName: keyName,
-        description,
-        translations: { en: enTranslation },
+  try {
+    // Parse the JSON string
+    const keyObjects = JSON.parse(keyListString);
+    if (Array.isArray(keyObjects)) {
+      keyObjects.forEach((key) => {
+        // Validate the structure of each key object
+        if (
+          key.name &&
+          typeof key.name === "string" &&
+          key.description &&
+          typeof key.description === "string" &&
+          key.translations &&
+          typeof key.translations.en === "string"
+        ) {
+          // Push validated keys to the array
+          createdKeys.push({
+            keyName: key.name,
+            description: key.description,
+            translations: { en: key.translations.en },
+          });
+        } else {
+          console.warn("Invalid key structure found:", key);
+        }
       });
-    });
-  } else {
-    console.error("[keyExtractor] No key blocks found in response.");
+    } else {
+      console.error("[keyExtractor] Expected an array of key objects.");
+    }
+  } catch (error) {
+    console.error("[keyExtractor] Failed to parse JSON:", error);
   }
 
   return createdKeys;
