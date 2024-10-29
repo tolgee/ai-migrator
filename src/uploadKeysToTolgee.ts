@@ -25,13 +25,15 @@ export const uploadKeysToTolgee = async (
       keys: formattedKeys,
     });
 
-    console.log("Keys uploaded successfully to Tolgee.");
+    console.log("[uploadKeysToTolgee] Keys uploaded successfully to Tolgee.");
     return {
       success: true,
       message: "Keys uploaded successfully",
     };
   } catch (error) {
-    console.error(`Error uploading keys to Tolgee: ${error}`);
+    console.error(
+      `[uploadKeysToTolgee] Error uploading keys to Tolgee: ${error}`,
+    );
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
     return {

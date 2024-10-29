@@ -1,7 +1,7 @@
 import fsExtra from "fs-extra";
-import inquirer from "inquirer";
 
-const tempFilePath = "allKeys.json";
+const TOLGEE_DIR = "./.tolgee";
+const allKeysFilePath = `${TOLGEE_DIR}/allKeys.json`;
 
 type KeyObject = {
   keyName: string;
@@ -12,41 +12,40 @@ type KeyObject = {
 // Function to save or append keys
 export const saveKeys = async (filePath: string, keys: KeyObject[]) => {
   try {
-    const fileExists = await fsExtra.pathExists(tempFilePath);
+    let allKeys: { [filePath: string]: KeyObject[] } = {};
+    const fileExists = await fsExtra.pathExists(allKeysFilePath);
 
     if (fileExists) {
-      // Ask the user if they want to overwrite or append
-      const { overwrite } = await inquirer.prompt({
-        type: "confirm",
-        name: "overwrite",
-        message:
-          "The allKeys file already exists. Do you want to overwrite it?",
-        default: false,
-      });
-
-      if (overwrite) {
-        // Overwrite the file
-        const newData = { [filePath]: keys };
-        await fsExtra.writeJson(tempFilePath, newData, { spaces: 2 });
-        console.log("Keys have been overwritten in the allKeys file.");
-      } else {
-        // Append to the file
-        const existingKeys = await fsExtra.readJson(tempFilePath);
-        // Add or update the keys for the given file path
-        existingKeys[filePath] = existingKeys[filePath]
-          ? [...existingKeys[filePath], ...keys]
-          : keys;
-
-        await fsExtra.writeJson(tempFilePath, existingKeys, { spaces: 2 });
-        console.log("Keys have been added to the existing allKeys file.");
+      try {
+        allKeys = await fsExtra.readJson(allKeysFilePath);
+      } catch (error) {
+        console.warn("[saveKeys] Warning: allKeys.json is empty or malformed. Initializing as empty object.");
+        allKeys = {};
       }
     } else {
-      // If file doesn't exist, create it
-      const newData = { [filePath]: keys };
-      await fsExtra.writeJson(tempFilePath, newData, { spaces: 2 });
-      console.log("Keys have been saved to a new allKeys file.");
+      await fsExtra.writeJson(allKeysFilePath, allKeys, { spaces: 2 });
     }
+
+    // Check if the specified filePath already exists in allKeys.json
+    if (!allKeys[filePath]) {
+      // If file path does not exist, add the new keys for this file
+      allKeys[filePath] = keys;
+    } else {
+      // If file path exists, filter out keys that are already present
+      const existingKeys = allKeys[filePath].map((keyObj) => keyObj.keyName);
+      const keysToAdd = keys.filter(
+        (key) => !existingKeys.includes(key.keyName),
+      );
+
+      // Only update if there are new keys to add
+      if (keysToAdd.length > 0) {
+        allKeys[filePath] = [...allKeys[filePath], ...keysToAdd];
+      }
+    }
+
+    // Write updated allKeys object back to allKeys.json
+    await fsExtra.writeJson(allKeysFilePath, allKeys, { spaces: 2 });
   } catch (error) {
-    console.error("Error saving keys:", error);
+    console.error("[saveAllKeys] Error saving keys:", error);
   }
 };

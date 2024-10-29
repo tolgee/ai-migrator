@@ -30,6 +30,11 @@ export function getPrompts({
                                         - "translations" (with "en" containing the original text).
                         `;
 
+  // Append the promptAppendix if provided
+  const completeSystemPrompt = promptAppendix
+    ? `${systemPrompt}\n\nAdditional Instructions:\n${promptAppendix}`
+    : systemPrompt;
+
   const userPrompt = `
                             Here is the file content that needs to be processed:
                             \`\`\`
@@ -37,5 +42,5 @@ export function getPrompts({
                             \`\`\`
                         `;
 
-  return { systemPrompt, userPrompt };
+  return { completeSystemPrompt, userPrompt };
 }

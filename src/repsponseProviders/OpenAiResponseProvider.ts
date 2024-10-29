@@ -1,5 +1,5 @@
 import { GetResponseProps, ResponseProvider } from "./ResponseProvider";
-import { AzureOpenAI, OpenAI } from "openai";
+import { OpenAI } from "openai";
 import { getPrompts } from "../promptsProvider";
 
 export function OpenAiResponseProvider({
@@ -12,8 +12,10 @@ export function OpenAiResponseProvider({
   });
 
   return {
-    async getResponse(props: GetResponseProps): Promise<string | null> {
-      const { systemPrompt, userPrompt } = getPrompts(props);
+    async getResponse(
+      props: GetResponseProps,
+    ): Promise<string | null | undefined> {
+      const { completeSystemPrompt, userPrompt } = getPrompts(props);
 
       const response = await openai.chat.completions.create(
         {
@@ -21,7 +23,7 @@ export function OpenAiResponseProvider({
           messages: [
             {
               role: "system",
-              content: systemPrompt,
+              content: completeSystemPrompt,
             },
             {
               role: "user",

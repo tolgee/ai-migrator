@@ -1,6 +1,6 @@
 import { GetResponseProps, ResponseProvider } from "./ResponseProvider";
 import { getPrompts } from "../promptsProvider";
-import { AzureOpenAI, OpenAI } from "openai";
+import { AzureOpenAI } from "openai";
 
 export function AzureResponseProvider(config: {
   apiVersion: string;
@@ -16,15 +16,17 @@ export function AzureResponseProvider(config: {
   });
 
   return {
-    async getResponse(props: GetResponseProps): Promise<string | null> {
-      const { systemPrompt, userPrompt } = getPrompts(props);
+    async getResponse(
+      props: GetResponseProps,
+    ): Promise<string | null | undefined> {
+      const { completeSystemPrompt, userPrompt } = getPrompts(props);
 
       const response = await azureClient.chat.completions.create({
         model: "gpt-4o",
         messages: [
           {
             role: "system",
-            content: systemPrompt,
+            content: completeSystemPrompt,
           },
           {
             role: "user",

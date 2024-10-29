@@ -8,13 +8,13 @@ export const findFiles = async (
     const files = await glob(pattern, { onlyFiles: true });
 
     if (files.length === 0) {
-      console.error(`No files matched the pattern: ${pattern}`);
+      console.error(`[findFiles] No files matched the pattern: ${pattern}`);
       return [];
     }
 
     return files as string[];
   } catch (error) {
-    console.error(`Error while finding files: ${error}`);
+    console.error(`[findFiles] Error while finding files: ${error}`);
     return [];
   }
 };

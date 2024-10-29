@@ -4,7 +4,6 @@ import { Command } from "commander";
 import { findFiles } from "./findFiles";
 import { sendFileToChatGPT } from "./chatGPT";
 import { uploadKeysToTolgee } from "./uploadKeysToTolgee";
-import inquirer from "inquirer";
 import fsExtra from "fs-extra";
 
 const { promises: fs } = fsExtra;
@@ -13,8 +12,8 @@ import {
   loadMigrationStatus,
   updateMigrationStatus,
 } from "./migrationStatus";
-import * as path from "node:path";
 import { saveKeys } from "./saveAllKeys";
+import { execSync } from "child_process";
 
 type KeyObject = {
   keyName: string;
@@ -29,67 +28,49 @@ interface MigrationStatus {
   };
 }
 
+// Function to check if the Git working directory is clean
+function checkGitClean(): boolean {
+  const result = execSync("git status --porcelain").toString().trim();
+  if (result) {
+    console.error(
+      "[cli][checkGitClean] Migrator requires a clean git state. Please commit or stash changes before proceeding.",
+    );
+    return false;
+  }
+  return true;
+}
+
 // Function to process a single file
 const processFile = async (
   file: string,
   status: MigrationStatus,
   allKeys: KeyObject[],
+  appendixPath?: string,
 ) => {
   try {
     const status = await loadMigrationStatus();
 
     // Skip already processed files
     if (status[file] && status[file].migrated) {
-      console.log(`Skipping already processed file: ${file}`);
+      console.log(
+        `[cli][processFile] Skipping already processed file: ${file}`,
+      );
       return;
     }
 
     // Send the file content to ChatGPT for localization
-    const result = await sendFileToChatGPT(file);
+    const result = await sendFileToChatGPT(file, appendixPath);
     if (!result) {
-      console.error("No result returned from ChatGPT");
+      console.error("[cli][processFile] No result returned from ChatGPT");
     }
 
     const { updatedContent, createdKeys } = result;
 
-    // Prompt the user for how they want to handle the file
-    const { userChoice } = await inquirer.prompt([
-      {
-        type: "list",
-        name: "userChoice",
-        message: "How would you like to handle the migrated file?",
-        choices: [
-          { name: "Overwrite the original file", value: "overwrite" },
-          {
-            name: "Save the updated file in the 'migrated_files' directory",
-            value: "migrate",
-          },
-        ],
-      },
-    ]);
-
-    if (userChoice === "overwrite") {
-      // Overwrite the original file
-      await fs.writeFile(file, updatedContent, "utf8");
-      console.log(`File ${file} has been updated successfully.`);
-    } else if (userChoice === "migrate") {
-      // Save the updated file in the migrated_files directory
-      const migratedDir = "src/migrated_files";
-      await fsExtra.ensureDir(migratedDir);
-
-      // Extract the file name from the full path
-      const fileName = path.basename(file);
-
-      // Write the updated content back to the file (in migrated_files directory)
-      await fs.writeFile(
-        path.join(migratedDir, fileName),
-        updatedContent,
-        "utf8",
-      );
-      console.log(
-        `Updated file has been saved to ${path.join(migratedDir, fileName)}.`,
-      );
-    }
+    // Overwrite the original file
+    await fs.writeFile(file, updatedContent, "utf8");
+    console.log(
+      `[cli][processFile] File ${file} has been updated successfully.`,
+    );
 
     // Get the relevant key names
     const relevantKeys = createdKeys.map((key) => key.keyName);
@@ -103,15 +84,26 @@ const processFile = async (
     // Save keys to file
     await saveKeys(file, allKeys);
 
-    console.log(`Successfully processed and updated file: ${file}`);
+    console.log(
+      `[cli][processFile] Successfully processed and updated file: ${file}`,
+    );
   } catch (error) {
-    console.error(`Error processing file ${file}:`, error);
+    console.error(`[cli][processFile] Error processing file ${file}:`, error);
   }
 };
 
 // Main function to handle file migration interactively
-const migrateFiles = async (filePattern: string, confirmUpload: boolean) => {
+const migrateFiles = async (
+  filePattern: string,
+  confirmUpload: boolean,
+  appendixPath?: string,
+) => {
   try {
+    // Check if the Git working directory is clean
+    if (!checkGitClean()) {
+      return;
+    }
+
     // Load migration status
     const status = await loadMigrationStatus();
 
@@ -119,30 +111,40 @@ const migrateFiles = async (filePattern: string, confirmUpload: boolean) => {
     const files = await findFiles(filePattern);
 
     if (!files || files.length === 0) {
-      console.log("No files found for the given pattern.");
+      console.log("[cli][migrateFiles] No files found for the given pattern.");
       return;
     }
 
-    console.log(`Found ${files.length} files. Starting migration...`);
+    console.log(
+      `[cli][migrateFiles] Found ${files.length} files. Starting migration...`,
+    );
 
     const allKeys: KeyObject[] = [];
 
     // Process each file asynchronously
-    await Promise.all(files.map((file) => processFile(file, status, allKeys)));
+    await Promise.all(
+      files.map((file) => processFile(file, status, allKeys, appendixPath)),
+    );
 
     // Upload the keys to Tolgee if there are any
     if (confirmUpload && allKeys.length > 0) {
       try {
         await uploadKeysToTolgee(allKeys);
-        console.log("Keys uploaded successfully to Tolgee.");
+        console.log(
+          "[cli][migrateFiles] Keys uploaded successfully to Tolgee.",
+        );
       } catch (error) {
-        console.error(`Error uploading keys to Tolgee: ${error}`);
+        console.error(
+          `[cli][migrateFiles] Error uploading keys to Tolgee: ${error}`,
+        );
       }
     } else {
-      console.log("Keys upload skipped.");
+      console.log("[cli][migrateFiles] Keys upload skipped.");
     }
   } catch (error) {
-    console.error(`Error during localization process: ${error}`);
+    console.error(
+      `[cli][migrateFiles] Error during localization process: ${error}`,
+    );
   }
 };
 // Setup Commander CLI
@@ -160,13 +162,17 @@ program
     "src/**/*.tsx",
   )
   .option("-u, --upload", "Automatically upload created keys to Tolgee", false)
+  .option(
+    "-a, --appendixPath <appendixPath>",
+    "Path to file with custom prompt appendix",
+  )
   .action(async (options) => {
-    const { pattern, upload } = options;
+    const { pattern, upload, appendixPath } = options;
     try {
-      // Otherwise, run the migration process
-      await migrateFiles(pattern, upload);
+      // Run the migration process
+      await migrateFiles(pattern, upload, appendixPath);
     } catch (error) {
-      console.error("Error during migration:", error);
+      console.error("[cli][migrate command] Error during migration:", error);
     }
   });
 
@@ -182,11 +188,14 @@ program
     try {
       await checkMigrationStatus(file, all);
     } catch (error) {
-      console.error("Error checking migration status:", error);
+      console.error(
+        "[cli][status command] Error checking migration status:",
+        error,
+      );
     }
   });
 
-// upload command
+// Upload command
 program
   .command("upload-keys")
   .description("Upload the localization strings to Tolgee")
@@ -196,12 +205,20 @@ program
       const result = await uploadKeysToTolgee(keys);
 
       if (result.success) {
-        console.log("Keys uploaded successfully to Tolgee..");
+        console.log(
+          "[cli][upload command] Keys uploaded successfully to Tolgee..",
+        );
       } else {
-        console.log("Upload to Tolgee failed:", result.message);
+        console.log(
+          "[cli][upload command] Upload to Tolgee failed:",
+          result.message,
+        );
       }
     } catch (error) {
-      console.error("Error uploading keys to Tolgee:", error);
+      console.error(
+        "[cli][upload command] Error uploading keys to Tolgee:",
+        error,
+      );
     }
   });
 
