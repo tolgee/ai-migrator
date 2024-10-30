@@ -1,5 +1,7 @@
 # AI Migration Tool
 
+*Disclaimer: This tool is not released yet! It's in PoC state. Use at your own risk.*
+
 This tool automates the process of migrating string literals in TypeScript and TSX files to localized keys using ChatGPT, compatible with both Azure OpenAI and OpenAI setups, and Tolgee. It tracks the migration status of each file, preventing duplicate processing, and uploads
 localization keys to Tolgee for translation management.
 
