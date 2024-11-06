@@ -54,7 +54,7 @@ describe("migrationStatus", () => {
     (fsExtra.promises.readFile as jest.Mock).mockResolvedValue("{}");
 
     const relevantKeys = ["key1", "key2"];
-    await updateMigrationStatus("file1.tsx", relevantKeys);
+    await updateMigrationStatus("file1.tsx", relevantKeys, true);
 
     const expectedStatus = {
       "file1.tsx": {
@@ -118,7 +118,7 @@ describe("migrationStatus", () => {
     );
 
     const relevantKeys = ["key1", "key2"];
-    await updateMigrationStatus("file1.tsx", relevantKeys);
+    await updateMigrationStatus("file1.tsx", relevantKeys, false);
 
     // Assert that the mocked console.error was called with the correct error message
     expect(console.error).toHaveBeenCalledWith(

@@ -3,8 +3,8 @@ import { extractCreatedKeys } from "./keyExtractor";
 import { getOpenAiResponse } from "./getOpenAiResponse";
 
 const { promises: fs } = fsExtra;
-export const FILE_CONTENTS_KEYWORD = "---T components---";
-export const KEYS_KEYWORD = "---KEYS---";
+export const FILE_CONTENTS_KEYWORD = "T components";
+export const KEYS_KEYWORD = "KEYS";
 
 // Define a type for the ChatGPT response structure
 interface ChatGPTResponse {
@@ -23,10 +23,149 @@ async function loadPromptAppendix(filePath?: string): Promise<string> {
     return await fs.readFile(filePath, "utf-8");
   } catch (error) {
     console.error(
-      `[chatGPT] Failed to read prompt appendix from ${filePath}:`,
+      `[chatGPT] Error: Failed to read prompt appendix from ${filePath}:`,
       error,
     );
     return "";
+  }
+}
+
+// // Helper function to check if keyListString is valid JSON
+function isValidJson(keyListString: string): boolean {
+  const cleanedString = keyListString.replace(/\s|[\r\n]/g, ""); // Remove whitespace and newline characters
+  if (!cleanedString.trim()) {
+    return false;
+  }
+
+  const openBraces = (cleanedString.match(/{/g) || []).length;
+  const closeBraces = (cleanedString.match(/}/g) || []).length;
+
+  if (openBraces !== closeBraces) {
+    return false;
+  }
+
+  try {
+    JSON.parse(cleanedString);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Helper function to remove the redundant text
+function removeCodeWrappings(responseText: string): string {
+  return responseText.replace(/```.*?\n([\s\S]*?)\n```/g, "$1").trim();
+}
+
+// Helper function to sanitize the JSON string before parsing
+function sanitizeKeyListString(keyListString: string): string {
+  // Remove backticks, newline characters, and single-line comments (//...)
+  return keyListString
+    .replace(/```|[\r\n]/g, "")
+    .replace(/\/\/.*$/gm, "")
+    .trim();
+}
+
+// Function to request a complete response with retries
+async function requestCompleteResponse(
+  fileContent: string,
+  promptAppendix: string,
+): Promise<
+  { success: boolean; responseText: string; keyListString: string } | undefined
+> {
+  const lines = fileContent.split("\n");
+  const chunkSize = 20;
+  let completeResponse = "";
+  const finalKeyEntries: Record<string, any> = {}; // Accumulated keys
+
+  try {
+    for (let i = 0; i < lines.length; i += chunkSize) {
+      const chunk = lines.slice(i, i + chunkSize).join("\n");
+      const responseText = await getOpenAiResponse({
+        fileContent: chunk,
+        promptAppendix,
+      });
+
+      if (!responseText) {
+        console.warn("[chatGPT] No response received from OpenAI.");
+        return { success: false, keyListString: "", responseText: "" }; // Keep original file
+      }
+
+      const cleanedResponseText = removeCodeWrappings(responseText);
+      console.log(
+        "[chatGPT] Full response with delimiters: ",
+        cleanedResponseText,
+      );
+
+      // Check and extract the T components section
+      const componentsPattern = new RegExp(
+        `${FILE_CONTENTS_KEYWORD}\\s*(.*?)\\s*(?=${KEYS_KEYWORD})`,
+        "s",
+      );
+      const componentsMatch = componentsPattern.exec(cleanedResponseText);
+      if (componentsMatch) {
+        const extractedContent = componentsMatch[1].trim();
+        if (!extractedContent) {
+          console.warn(
+            "[chatGPT] Warning: Content between delimiters is empty. Keeping original file.",
+          );
+          return { success: false, keyListString: "", responseText: "" }; // Stop and keep original file
+        } else {
+          completeResponse += extractedContent + "\n";
+        }
+      } else {
+        console.warn(
+          "[chatGPT] Warning: Missing delimiter or incomplete content in response. Keeping original file.",
+        );
+        return { success: false, keyListString: "", responseText: "" }; // Stop and keep original file
+      }
+
+      // Check and extract the KEYS section JSON content
+      const keysPattern = new RegExp(`${KEYS_KEYWORD}\\s*({.*?})\\s*$`, "s");
+      const keysMatch = keysPattern.exec(cleanedResponseText);
+      if (keysMatch) {
+        const keyListString = sanitizeKeyListString(keysMatch[1]);
+
+        try {
+          if (isValidJson(keyListString)) {
+            const keyEntries = JSON.parse(keyListString);
+
+            // Append each key entry to the accumulated finalKeyEntries if valid
+            Object.assign(finalKeyEntries, keyEntries);
+          } else {
+            console.warn(
+              "[chatGPT] Warning: Key list is empty or invalid JSON. Keeping original file.",
+            );
+            return { success: false, keyListString: "", responseText: "" }; // Stop and keep original file
+          }
+        } catch (error) {
+          console.error(
+            "[chatGPT] Error: Failed to parse key entries. Keeping original file:",
+            error,
+          );
+          return { success: false, keyListString: "", responseText: "" }; // Stop and keep original file
+        }
+      } else {
+        console.warn(
+          "[chatGPT] Warning: KEYS section missing or incomplete. Keeping original file.",
+        );
+        return { success: false, keyListString: "", responseText: "" }; // Stop and keep original file
+      }
+    }
+
+    // Convert accumulated finalKeyEntries to JSON
+    const finalKeyListString = JSON.stringify(finalKeyEntries);
+    return {
+      success: true,
+      responseText: completeResponse,
+      keyListString: finalKeyListString, // Contains accumulated keys from all chunks
+    };
+  } catch (error) {
+    console.error(
+      "[chatGPT] Error: Unexpected error in requestCompleteResponse. Keeping original file:",
+      error,
+    );
+    return { success: false, keyListString: "", responseText: "" }; // Stop and keep original file
   }
 }
 
@@ -34,7 +173,7 @@ async function loadPromptAppendix(filePath?: string): Promise<string> {
 export const sendFileToChatGPT = async (
   filePath: string,
   promptAppendixPath?: string,
-): Promise<ChatGPTResponse> => {
+): Promise<{ success: boolean; result: ChatGPTResponse }> => {
   try {
     // Read the file content from the provided file path
     const fileContent = await fs.readFile(filePath, "utf-8");
@@ -42,51 +181,23 @@ export const sendFileToChatGPT = async (
     // Load custom instructions from the prompt appendix file if path is provided
     const promptAppendix = await loadPromptAppendix(promptAppendixPath);
 
-    const responseText = await getOpenAiResponse({
-      fileContent,
-      promptAppendix,
-    });
+    // Get a complete response with error handling
+    const response = await requestCompleteResponse(fileContent, promptAppendix);
 
-    if (!responseText) {
-      console.error("[chatGPT] No updated content received from OpenAI.");
+    // Check if response is undefined or success is false
+    if (!response || !response.success) {
+      console.error(
+        "[chatGPT] Error: Failed to obtain a valid response from ChatGPT.",
+      );
       return {
-        updatedContent: "",
-        createdKeys: [],
+        success: false,
+        result: { updatedContent: "", createdKeys: [] },
       };
     }
 
-    console.log(
-      "[chatGPT] Full response text with delimiters from OpenAI:",
-      responseText,
-    ); // Log the full response text
+    const { responseText, keyListString } = response;
 
-    // Extract the content between the delimiters
-    const componentsStart =
-      responseText.indexOf(FILE_CONTENTS_KEYWORD) +
-      FILE_CONTENTS_KEYWORD.length;
-    const componentsEnd = responseText.indexOf(KEYS_KEYWORD);
-    const fileContentWithComponents = responseText
-      .substring(componentsStart, componentsEnd)
-      .trim();
-
-    const responseParts = responseText?.split(KEYS_KEYWORD); // Split the response at a marker like `---KEYS---`
-    if (!responseParts) {
-      console.error("[chatGPT] Failed to split the response text.");
-      return {
-        updatedContent: "",
-        createdKeys: [],
-      };
-    }
-
-    const keyListString = responseParts[1]; // The JSON-like string for the key list
-    if (!keyListString) {
-      console.error("[chatGPT] Failed to access list of keys.");
-      return {
-        updatedContent: "",
-        createdKeys: [],
-      };
-    }
-    console.log("[chatGPT] Key list string from ChatGPT:", keyListString); // Log the raw key list string
+    const fileContentWithComponents = responseText.trim();
 
     // Parse the key list from the response
     let createdKeys: {
@@ -99,23 +210,26 @@ export const sendFileToChatGPT = async (
       console.log("[chatGPT] Parsed created keys:", createdKeys); // Log the parsed list of keys
     } catch (error) {
       console.error(
-        "[chatGPT] Failed to parse the list of keys from ChatGPT response.",
+        "[chatGPT] Error: Failed to parse the list of keys from ChatGPT response.",
         error,
       );
-      createdKeys = [];
+      return {
+        success: false,
+        result: { updatedContent: "", createdKeys: [] },
+      };
     }
 
     return {
-      updatedContent: fileContentWithComponents,
-      createdKeys,
+      success: true,
+      result: {
+        updatedContent: fileContentWithComponents,
+        createdKeys,
+      },
     };
   } catch (error) {
     console.error(
-      `[chatGPT] Error during ChatGPT request processing for ${filePath}: ${error}`,
+      `[chatGPT] Error: Error during ChatGPT request for ${filePath}: ${error}`,
     );
-    return {
-      updatedContent: "",
-      createdKeys: [],
-    };
+    return { success: false, result: { updatedContent: "", createdKeys: [] } };
   }
 };
