@@ -1,3 +1,5 @@
+import logger from "./utils/logger";
+
 export interface CreatedKey {
   keyName: string;
   description: string;
@@ -25,13 +27,11 @@ export const extractCreatedKeys = (keyListString: string): CreatedKey[] => {
     let finalString = sanitizedString;
     if (openBraces > closeBraces) {
       finalString += "}".repeat(openBraces - closeBraces);
-      console.warn("[keyExtractor] JSON was incomplete; added missing braces.");
+      logger.warn("JSON was incomplete; added missing braces.");
     }
 
     // Parse the JSON string
     const keyObjects = JSON.parse(finalString);
-
-    console.log("keyObjects", keyObjects);
 
     // Process each key-value pair in the object
     for (const [keyName, keyDetails] of Object.entries(keyObjects)) {
@@ -52,11 +52,11 @@ export const extractCreatedKeys = (keyListString: string): CreatedKey[] => {
           translations: { en: details.translations.en },
         });
       } else {
-        console.warn("Invalid key structure found for:", keyName);
+        logger.warn(`Invalid key structure found for: ${keyName}`);
       }
     }
   } catch (error) {
-    console.error("[keyExtractor] Failed to parse JSON:", error);
+    logger.error(`Failed to parse JSON: ${error}`);
   }
 
   return createdKeys;

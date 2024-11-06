@@ -4,9 +4,6 @@ node_modules/
 # TypeScript build output
 dist/
 
-# Environment variables file
-.env
-
 # Logs
 logs
 *.log
@@ -34,3 +31,4 @@ package-lock.json
 # Ignore compiled TypeScript files
 *.js
 *.d.ts
+.tolgee-migrator

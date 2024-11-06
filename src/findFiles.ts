@@ -1,4 +1,5 @@
 import glob from "fast-glob";
+import logger from "./utils/logger";
 
 export const findFiles = async (
   pattern: string | string[],
@@ -8,13 +9,13 @@ export const findFiles = async (
     const files = await glob(pattern, { onlyFiles: true });
 
     if (files.length === 0) {
-      console.error(`[findFiles] No files matched the pattern: ${pattern}`);
+      logger.error(`No files matched the pattern: ${pattern}`);
       return [];
     }
 
     return files as string[];
   } catch (error) {
-    console.error(`[findFiles] Error while finding files: ${error}`);
+    logger.error(`Error while finding files: ${error}`);
     return [];
   }
 };

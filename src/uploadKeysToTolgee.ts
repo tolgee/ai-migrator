@@ -1,4 +1,5 @@
 import axios from "axios";
+import logger from "./utils/logger";
 
 interface KeyObject {
   keyName: string;
@@ -25,15 +26,13 @@ export const uploadKeysToTolgee = async (
       keys: formattedKeys,
     });
 
-    console.log("[uploadKeysToTolgee] Keys uploaded successfully to Tolgee.");
+    logger.info("Keys uploaded successfully to Tolgee.");
     return {
       success: true,
       message: "Keys uploaded successfully",
     };
   } catch (error) {
-    console.error(
-      `[uploadKeysToTolgee] Error uploading keys to Tolgee: ${error}`,
-    );
+    logger.error(`Error uploading keys to Tolgee: ${error}`);
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
     return {

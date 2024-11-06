@@ -5,41 +5,54 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-// Load environment variables
-const azureApiKey = process.env.AZURE_OPENAI_API_KEY;
-const azureEndpoint = process.env.AZURE_OPENAI_ENDPOINT;
-const openAiApiKey = process.env.OPENAI_API_KEY;
+export interface ProviderOptions {
+  azureApiKey?: string;
+  azureEndpoint?: string;
+  openAiApiKey?: string;
+}
 
-const deployment = process.env.AZURE_OPENAI_DEPLOYMENT;
+const deployment = "gpt-4o";
 const apiVersion = "2023-03-15-preview";
 type ApiProvider = "AZURE_OPENAI" | "OPENAI";
 
-export function getResponseProvider(): ResponseProvider {
-  const apiProviderType: ApiProvider = getApiProviderType();
+export function getResponseProvider(
+  options: ProviderOptions,
+): ResponseProvider {
+  const apiProviderType: ApiProvider = getApiProviderType(options);
 
   switch (apiProviderType) {
     case "AZURE_OPENAI":
+      if (!options.azureApiKey || !options.azureEndpoint) {
+        throw new Error(
+          "Azure OpenAI API credentials are incomplete. Please provide both azureApiKey and azureEndpoint.",
+        );
+      }
       return AzureResponseProvider({
-        azureApiKey: azureApiKey!,
-        azureEndpoint,
+        azureApiKey: options.azureApiKey!,
+        azureEndpoint: options.azureEndpoint,
         deployment,
         apiVersion,
       });
     case "OPENAI":
-      return OpenAiResponseProvider({ openAiApiKey: openAiApiKey! });
+      if (!options.openAiApiKey) {
+        throw new Error(
+          "OpenAI API key is missing. Please provide openAiApiKey.",
+        );
+      }
+      return OpenAiResponseProvider({ openAiApiKey: options.openAiApiKey! });
   }
 }
 
-function getApiProviderType(): ApiProvider {
-  if (azureApiKey && azureEndpoint) {
+function getApiProviderType(options: ProviderOptions): ApiProvider {
+  if (options.azureApiKey && options.azureEndpoint) {
     return "AZURE_OPENAI";
   }
 
-  if (openAiApiKey) {
+  if (options.openAiApiKey) {
     return "OPENAI";
   }
 
   throw new Error(
-    "No API provider credentials specified in .env file, specify either Azure OpenAI or OpenAI credentials",
+    "No API provider credentials specified. Provide either Azure OpenAI credentials (API key and endpoint) or OpenAI API key as command-line arguments.",
   );
 }

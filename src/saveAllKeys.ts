@@ -1,6 +1,7 @@
 import fsExtra from "fs-extra";
+import logger from "./utils/logger";
 
-const TOLGEE_DIR = "./.tolgee";
+const TOLGEE_DIR = "./.tolgee-migrator";
 const allKeysFilePath = `${TOLGEE_DIR}/allKeys.json`;
 
 type KeyObject = {
@@ -19,7 +20,9 @@ export const saveKeys = async (filePath: string, keys: KeyObject[]) => {
       try {
         allKeys = await fsExtra.readJson(allKeysFilePath);
       } catch (error) {
-        console.warn("[saveKeys] Warning: allKeys.json is empty or malformed. Initializing as empty object.");
+        logger.warn(
+          `allKeys.json is empty or malformed. Initializing as empty object. ${error}`,
+        );
         allKeys = {};
       }
     } else {
@@ -46,6 +49,6 @@ export const saveKeys = async (filePath: string, keys: KeyObject[]) => {
     // Write updated allKeys object back to allKeys.json
     await fsExtra.writeJson(allKeysFilePath, allKeys, { spaces: 2 });
   } catch (error) {
-    console.error("[saveAllKeys] Error saving keys:", error);
+    logger.error("Error saving keys:", error);
   }
 };

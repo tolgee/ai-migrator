@@ -1,6 +1,8 @@
 import fsExtra from "fs-extra";
 import { extractCreatedKeys } from "./keyExtractor";
 import { getOpenAiResponse } from "./getOpenAiResponse";
+import { ProviderOptions } from "./responseProviders/getResponseProvider";
+import logger from "./utils/logger";
 
 const { promises: fs } = fsExtra;
 export const FILE_CONTENTS_KEYWORD = "T components";
@@ -22,10 +24,7 @@ async function loadPromptAppendix(filePath?: string): Promise<string> {
   try {
     return await fs.readFile(filePath, "utf-8");
   } catch (error) {
-    console.error(
-      `[chatGPT] Error: Failed to read prompt appendix from ${filePath}:`,
-      error,
-    );
+    logger.error(`Failed to read prompt appendix from ${filePath}: ${error}`);
     return "";
   }
 }
@@ -70,6 +69,7 @@ function sanitizeKeyListString(keyListString: string): string {
 async function requestCompleteResponse(
   fileContent: string,
   promptAppendix: string,
+  options: ProviderOptions,
 ): Promise<
   { success: boolean; responseText: string; keyListString: string } | undefined
 > {
@@ -81,21 +81,21 @@ async function requestCompleteResponse(
   try {
     for (let i = 0; i < lines.length; i += chunkSize) {
       const chunk = lines.slice(i, i + chunkSize).join("\n");
-      const responseText = await getOpenAiResponse({
-        fileContent: chunk,
-        promptAppendix,
-      });
+      const responseText = await getOpenAiResponse(
+        {
+          fileContent: chunk,
+          promptAppendix,
+        },
+        options,
+      );
 
       if (!responseText) {
-        console.warn("[chatGPT] No response received from OpenAI.");
+        logger.warn("No response received from OpenAI.");
         return { success: false, keyListString: "", responseText: "" }; // Keep original file
       }
 
       const cleanedResponseText = removeCodeWrappings(responseText);
-      console.log(
-        "[chatGPT] Full response with delimiters: ",
-        cleanedResponseText,
-      );
+      logger.debug(`Full response with delimiters: ${cleanedResponseText}`);
 
       // Check and extract the T components section
       const componentsPattern = new RegExp(
@@ -106,16 +106,16 @@ async function requestCompleteResponse(
       if (componentsMatch) {
         const extractedContent = componentsMatch[1].trim();
         if (!extractedContent) {
-          console.warn(
-            "[chatGPT] Warning: Content between delimiters is empty. Keeping original file.",
+          logger.warn(
+            "Content between delimiters is empty. Keeping original file.",
           );
           return { success: false, keyListString: "", responseText: "" }; // Stop and keep original file
         } else {
           completeResponse += extractedContent + "\n";
         }
       } else {
-        console.warn(
-          "[chatGPT] Warning: Missing delimiter or incomplete content in response. Keeping original file.",
+        logger.warn(
+          "Missing delimiter or incomplete content in response. Keeping original file.",
         );
         return { success: false, keyListString: "", responseText: "" }; // Stop and keep original file
       }
@@ -133,21 +133,20 @@ async function requestCompleteResponse(
             // Append each key entry to the accumulated finalKeyEntries if valid
             Object.assign(finalKeyEntries, keyEntries);
           } else {
-            console.warn(
-              "[chatGPT] Warning: Key list is empty or invalid JSON. Keeping original file.",
+            logger.warn(
+              "Key list is empty or invalid JSON. Keeping original file.",
             );
             return { success: false, keyListString: "", responseText: "" }; // Stop and keep original file
           }
         } catch (error) {
-          console.error(
-            "[chatGPT] Error: Failed to parse key entries. Keeping original file:",
-            error,
+          logger.error(
+            `Failed to parse key entries. Keeping original file ${error}:`,
           );
           return { success: false, keyListString: "", responseText: "" }; // Stop and keep original file
         }
       } else {
-        console.warn(
-          "[chatGPT] Warning: KEYS section missing or incomplete. Keeping original file.",
+        logger.warn(
+          "KEYS section missing or incomplete. Keeping original file.",
         );
         return { success: false, keyListString: "", responseText: "" }; // Stop and keep original file
       }
@@ -161,9 +160,8 @@ async function requestCompleteResponse(
       keyListString: finalKeyListString, // Contains accumulated keys from all chunks
     };
   } catch (error) {
-    console.error(
-      "[chatGPT] Error: Unexpected error in requestCompleteResponse. Keeping original file:",
-      error,
+    logger.error(
+      `Unexpected error in requestCompleteResponse. Keeping original file: ${error}`,
     );
     return { success: false, keyListString: "", responseText: "" }; // Stop and keep original file
   }
@@ -172,6 +170,7 @@ async function requestCompleteResponse(
 // Function to send file content to ChatGPT for migration
 export const sendFileToChatGPT = async (
   filePath: string,
+  options: ProviderOptions,
   promptAppendixPath?: string,
 ): Promise<{ success: boolean; result: ChatGPTResponse }> => {
   try {
@@ -182,13 +181,15 @@ export const sendFileToChatGPT = async (
     const promptAppendix = await loadPromptAppendix(promptAppendixPath);
 
     // Get a complete response with error handling
-    const response = await requestCompleteResponse(fileContent, promptAppendix);
+    const response = await requestCompleteResponse(
+      fileContent,
+      promptAppendix,
+      options,
+    );
 
     // Check if response is undefined or success is false
     if (!response || !response.success) {
-      console.error(
-        "[chatGPT] Error: Failed to obtain a valid response from ChatGPT.",
-      );
+      logger.error("Failed to obtain a valid response from ChatGPT.");
       return {
         success: false,
         result: { updatedContent: "", createdKeys: [] },
@@ -207,11 +208,10 @@ export const sendFileToChatGPT = async (
     }[] = [];
     try {
       createdKeys = extractCreatedKeys(keyListString); // Parse the list of keys
-      console.log("[chatGPT] Parsed created keys:", createdKeys); // Log the parsed list of keys
+      logger.info(`Parsed created keys: ${createdKeys}`); // Log the parsed list of keys
     } catch (error) {
-      console.error(
-        "[chatGPT] Error: Failed to parse the list of keys from ChatGPT response.",
-        error,
+      logger.error(
+        `Failed to parse the list of keys from ChatGPT response. ${error}`,
       );
       return {
         success: false,
@@ -227,9 +227,7 @@ export const sendFileToChatGPT = async (
       },
     };
   } catch (error) {
-    console.error(
-      `[chatGPT] Error: Error during ChatGPT request for ${filePath}: ${error}`,
-    );
+    logger.error(`Error during ChatGPT request for ${filePath}: ${error}`);
     return { success: false, result: { updatedContent: "", createdKeys: [] } };
   }
 };

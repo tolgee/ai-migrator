@@ -1,8 +1,9 @@
 import fsExtra from "fs-extra";
+import logger from "./utils/logger";
 
 const { promises: fs } = fsExtra;
 
-const TOLGEE_DIR = "./.tolgee";
+const TOLGEE_DIR = "./.tolgee-migrator";
 const statusFilePath = `${TOLGEE_DIR}/migration-status.json`;
 
 interface MigrationStatus {
@@ -16,8 +17,7 @@ interface MigrationStatus {
 export const updateMigrationStatus = async (
   filePath: string,
   relevantKeys: string[],
-  success: boolean
-
+  success: boolean,
 ): Promise<void> => {
   try {
     await fsExtra.ensureDir(TOLGEE_DIR);
@@ -36,10 +36,7 @@ export const updateMigrationStatus = async (
       "utf8",
     );
   } catch (error) {
-    console.error(
-      "[migrationStatus][update] Error updating migration status:",
-      error,
-    );
+    logger.error("Error updating migration status:", error);
   }
 };
 
@@ -64,9 +61,7 @@ export const loadMigrationStatus = async (): Promise<MigrationStatus> => {
       return JSON.parse(fileContent) as MigrationStatus;
     }
   } catch (error) {
-    console.error(
-      `[migrationStatus][load] Error loading migration status: ${error}`,
-    );
+    logger.error(`Error loading migration status: ${error}`);
     return {};
   }
 };
@@ -81,32 +76,21 @@ export const checkMigrationStatus = async (
 
     if (showAll) {
       // Show the entire status file
-      console.log(
-        "[migrationStatus][check] Complete migration status:",
-        status,
-      );
+      logger.info(`Complete migration status: ${status}`);
     } else if (filePath) {
       // Check status for the specific file
       const fileStatus = status[filePath];
       if (fileStatus) {
-        console.log(
-          `[migrationStatus][check] Migration status for ${filePath}:`,
-          fileStatus,
-        );
+        logger.info(`Migration status for ${filePath}:`, fileStatus);
       } else {
-        console.log(
-          `[migrationStatus][check] ${filePath} has not been migrated yet.`,
-        );
+        logger.info(`${filePath} has not been migrated yet.`);
       }
     } else {
-      console.log(
-        "[migrationStatus][check] Please provide a file to check its migration status or use the --all option to display the entire status.",
+      logger.info(
+        "Please provide a file to check its migration status or use the --all option to display the entire status.",
       );
     }
   } catch (error) {
-    console.error(
-      `[migrationStatus][check] Error checking migration status:`,
-      error,
-    );
+    logger.error(`Error checking migration status:`, error);
   }
 };
