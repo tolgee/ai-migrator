@@ -16,6 +16,8 @@ interface MigrationStatus {
 export const updateMigrationStatus = async (
   filePath: string,
   relevantKeys: string[],
+  success: boolean
+
 ): Promise<void> => {
   try {
     await fsExtra.ensureDir(TOLGEE_DIR);
@@ -23,7 +25,7 @@ export const updateMigrationStatus = async (
 
     // Update the file status and relevant keys
     currentStatus[filePath] = {
-      migrated: true,
+      migrated: success,
       relevantKeys,
     };
 

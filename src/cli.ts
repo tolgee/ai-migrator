@@ -59,9 +59,13 @@ const processFile = async (
     }
 
     // Send the file content to ChatGPT for localization
-    const result = await sendFileToChatGPT(file, appendixPath);
-    if (!result) {
-      console.error("[cli][processFile] No result returned from ChatGPT");
+    const { success, result } = await sendFileToChatGPT(file, appendixPath);
+    if (!success) {
+      console.error(`[cli][processFile] Migration failed for file: ${file}`);
+
+      // Update migration status to indicate failure
+      await updateMigrationStatus(file, [], success); // Pass false to mark as not migrated
+      return; // Exit without saving file or updating migration status
     }
 
     const { updatedContent, createdKeys } = result;
@@ -79,7 +83,7 @@ const processFile = async (
     allKeys.push(...createdKeys);
 
     // Mark the file as processed and include relevant keys
-    await updateMigrationStatus(file, relevantKeys);
+    await updateMigrationStatus(file, relevantKeys, success);
 
     // Save keys to file
     await saveKeys(file, allKeys);
@@ -121,10 +125,10 @@ const migrateFiles = async (
 
     const allKeys: KeyObject[] = [];
 
-    // Process each file asynchronously
-    await Promise.all(
-      files.map((file) => processFile(file, status, allKeys, appendixPath)),
-    );
+    // Process each file sequentially
+    for (const file of files) {
+      await processFile(file, status, allKeys, appendixPath);
+    }
 
     // Upload the keys to Tolgee if there are any
     if (confirmUpload && allKeys.length > 0) {
