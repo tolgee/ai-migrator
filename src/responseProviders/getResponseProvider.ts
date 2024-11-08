@@ -11,7 +11,7 @@ const azureEndpoint = process.env.AZURE_OPENAI_ENDPOINT;
 const openAiApiKey = process.env.OPENAI_API_KEY;
 
 const deployment = process.env.AZURE_OPENAI_DEPLOYMENT;
-const apiVersion = "2023-03-15-preview";
+const apiVersion = "2024-10-01-preview";
 type ApiProvider = "AZURE_OPENAI" | "OPENAI";
 
 export function getResponseProvider(): ResponseProvider {

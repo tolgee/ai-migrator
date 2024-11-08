@@ -118,12 +118,6 @@
     /* Skip type checking all .d.ts files. */
     "jsx": "react"
   },
-  "include": [
-    "src/**/*.ts",
-    "tests/**/*.ts"
-  ],
-  "exclude": [
-    "src/migrated_files",
-    "src/test_files"
-  ]
+  "include": ["src/**/*.ts", "tests/**/*.ts"],
+  "exclude": ["src/migrated_files", "src/test_files"]
 }

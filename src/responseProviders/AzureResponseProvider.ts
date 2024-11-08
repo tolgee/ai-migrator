@@ -1,6 +1,7 @@
 import { GetResponseProps, ResponseProvider } from "./ResponseProvider";
 import { getPrompts } from "../promptsProvider";
 import { AzureOpenAI } from "openai";
+import { chatGptResponseFormat } from "./responseFormat";
 
 export function AzureResponseProvider(config: {
   apiVersion: string;
@@ -23,6 +24,8 @@ export function AzureResponseProvider(config: {
 
       const response = await azureClient.chat.completions.create({
         model: "gpt-4o",
+        response_format: chatGptResponseFormat,
+        temperature: 0,
         messages: [
           {
             role: "system",
@@ -33,7 +36,6 @@ export function AzureResponseProvider(config: {
             content: userPrompt,
           },
         ],
-        max_tokens: 1024,
       });
 
       // Extract the file content and keys separately from the response

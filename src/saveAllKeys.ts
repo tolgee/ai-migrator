@@ -1,25 +1,23 @@
 import fsExtra from "fs-extra";
+import {Key} from "./responseProviders/responseFormat";
 
 const TOLGEE_DIR = "./.tolgee";
 const allKeysFilePath = `${TOLGEE_DIR}/allKeys.json`;
 
-type KeyObject = {
-  keyName: string;
-  description: string;
-  translations: { en: string };
-};
 
 // Function to save or append keys
-export const saveKeys = async (filePath: string, keys: KeyObject[]) => {
+export const saveKeys = async (filePath: string, keys: Key[]) => {
   try {
-    let allKeys: { [filePath: string]: KeyObject[] } = {};
+    let allKeys: { [filePath: string]: Key[] } = {};
     const fileExists = await fsExtra.pathExists(allKeysFilePath);
 
     if (fileExists) {
       try {
         allKeys = await fsExtra.readJson(allKeysFilePath);
       } catch (error) {
-        console.warn("[saveKeys] Warning: allKeys.json is empty or malformed. Initializing as empty object.");
+        console.warn(
+          "[saveKeys] Warning: allKeys.json is empty or malformed. Initializing as empty object.",
+        );
         allKeys = {};
       }
     } else {
@@ -32,9 +30,9 @@ export const saveKeys = async (filePath: string, keys: KeyObject[]) => {
       allKeys[filePath] = keys;
     } else {
       // If file path exists, filter out keys that are already present
-      const existingKeys = allKeys[filePath].map((keyObj) => keyObj.keyName);
+      const existingKeys = allKeys[filePath].map((keyObj) => keyObj.name);
       const keysToAdd = keys.filter(
-        (key) => !existingKeys.includes(key.keyName),
+        (key) => !existingKeys.includes(key.name),
       );
 
       // Only update if there are new keys to add

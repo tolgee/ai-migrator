@@ -1,4 +1,5 @@
 import axios from "axios";
+import { Key } from "./responseProviders/responseFormat";
 
 interface KeyObject {
   keyName: string;
@@ -12,13 +13,14 @@ interface TolgeeUploadResponse {
 }
 
 export const uploadKeysToTolgee = async (
-  keys: KeyObject[],
+  keys: Key[],
 ): Promise<TolgeeUploadResponse> => {
   try {
     const formattedKeys = keys.map((key) => ({
-      keyName: key.keyName,
+      keyName: key.name,
       description: key.description,
-      translations: key.translations, // English as default translation
+      // TODO: Add support for different base language
+      translations: { en: key.default }, // English as default translation
     }));
 
     await axios.post("https://tolgee.io/api/import-keys-2", {

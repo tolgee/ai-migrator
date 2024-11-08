@@ -1,6 +1,6 @@
 # AI Migration Tool
 
-*Disclaimer: This tool is not released yet! It's in PoC state. Use at your own risk.*
+_Disclaimer: This tool is not released yet! It's in PoC state. Use at your own risk._
 
 This tool automates the process of migrating string literals in TypeScript and TSX files to localized keys using ChatGPT, compatible with both Azure OpenAI and OpenAI setups, and Tolgee. It tracks the migration status of each file, preventing duplicate processing, and uploads
 localization keys to Tolgee for translation management.
@@ -21,12 +21,12 @@ localization keys to Tolgee for translation management.
 - [Installation](#installation)
 - [Environment Variables](#environment-variables)
 - [Usage](#usage)
-    - [CLI Commands](#cli-commands)
+  - [CLI Commands](#cli-commands)
 - [Modules](#modules)
-    - [File Finder](#1-file-finder-findfilests)
-    - [Migration Status](#2-migration-status-migrationStatusts)
-    - [ChatGPT Localization](#3-chatgpt-localization-chatgptts)
-    - [Tolgee Integration](#4-tolgee-integration-tolgeets)
+  - [File Finder](#1-file-finder-findfilests)
+  - [Migration Status](#2-migration-status-migrationStatusts)
+  - [ChatGPT Localization](#3-chatgpt-localization-chatgptts)
+  - [Tolgee Integration](#4-tolgee-integration-tolgeets)
 - [Testing](#testing)
 - [Error Handling](#error-handling)
 - [Conclusion](#conclusion)
@@ -36,6 +36,7 @@ localization keys to Tolgee for translation management.
 ### Installation
 
 #### Option 1: Run Directly with `npx`
+
 If you prefer not to install the tool globally, you can run it directly using `npx`:
 
 ```bash
@@ -45,42 +46,42 @@ npx cli migrate [options]
 #### Option 2: Clone and Install Locally
 
 1. **Clone the repository:**
-   
+
    ```bash
    git clone https://github.com/tolgee/ai-migrator
    cd ai-migrator
    ```
-   
+
 2. **Install the dependencies:**
 
    ```bash
    npm install
    ```
-   
+
 3. **Set up environment variables:** Create a `.env` file in the root of the project and add your Azure OpenAI API key, endpoint, and deployment details. If you're using OpenAI directly instead of Azure, include the OpenAI API key and endpoint as well:
 
-    ```bash
-    # Azure OpenAI setup (if using Azure)
-    AZURE_OPENAI_API_KEY=your-azure-openai-api-key-here
-    AZURE_OPENAI_ENDPOINT=https://your-azure-endpoint-url
-    AZURE_OPENAI_DEPLOYMENT=gpt-4o
-   
-    # OpenAI setup (if using OpenAI directly)
-    OPENAI_API_KEY=your-openai-api-key-here
-    OPENAI_ENDPOINT=https://api.openai.com/v1/chat/completions
-    ```
-   
+   ```bash
+   # Azure OpenAI setup (if using Azure)
+   AZURE_OPENAI_API_KEY=your-azure-openai-api-key-here
+   AZURE_OPENAI_ENDPOINT=https://your-azure-endpoint-url
+   AZURE_OPENAI_DEPLOYMENT=gpt-4o
+
+   # OpenAI setup (if using OpenAI directly)
+   OPENAI_API_KEY=your-openai-api-key-here
+   OPENAI_ENDPOINT=https://api.openai.com/v1/chat/completions
+   ```
+
 4. **Build the project:** This project is written in TypeScript, so you need to compile it to JavaScript before running
    the
    commands:
-    ```bash
-    npm run build
-    ```
+   ```bash
+   npm run build
+   ```
 5. **Rebuild after changes:** Whenever you make changes to the TypeScript files, you need to rebuild the project by
    running:
-    ```bash
-    npm run build
-    ```
+   ```bash
+   npm run build
+   ```
 6. **Run the tool:** After building the project, you can use the CLI as described in the [Usage](#usage) section.
 
 <hr>
@@ -90,12 +91,14 @@ npx cli migrate [options]
 For this tool, you can configure either Azure OpenAI or OpenAI directly. Set the appropriate environment variables based on the setup you're using.
 
 **For Azure OpenAI:**
+
 - **AZURE_OPENAI_API_KEY:** The API key for OpenAI, required for interacting with the ChatGPT API.
 - **AZURE_OPENAI_ENDPOINT:** The endpoint URL for your Azure OpenAI instance, used to send API requests to Azure OpenAI.
 - **AZURE_OPENAI_DEPLOYMENT:** The name of the OpenAI model deployment in Azure, used to specify which model (e.g.,
   gpt-4o) is being used.
 
 **For OpenAI:**
+
 - **OPENAI_API_KEY:** The API key for OpenAI, required for accessing OpenAI’s ChatGPT API.
 - **OPENAI_ENDPOINT:** The endpoint URL for OpenAI, typically https://api.openai.com/v1/chat/completions.
 
@@ -115,9 +118,9 @@ string literals with Tolgee’s `<T>` component or `useTranslate` hook, and gene
 
 **Process Overview:**
 
-   1. The project files are overwritten with new components.
-   2. An `allKeys.json` file is generated and stored in the root of the project, containing the keys for localization.
-   3. Users can then manually review or modify both the project files and the `allKeys.json` file.
+1.  The project files are overwritten with new components.
+2.  An `allKeys.json` file is generated and stored in the root of the project, containing the keys for localization.
+3.  Users can then manually review or modify both the project files and the `allKeys.json` file.
 
 **Usage**
 
@@ -129,27 +132,27 @@ cli migrate [options]
 
 - `-p, --pattern <pattern>`: Defines the file pattern to search for files to process. The default pattern is `src/**/*.tsx`.
 
-    - Example:
+  - Example:
 
-        ```bash
-        cli migrate --pattern "src/test_files/**/*.tsx"
-        ```
+    ```bash
+    cli migrate --pattern "src/test_files/**/*.tsx"
+    ```
 
 - `-u, --upload`: Automatically uploads the created localization keys to Tolgee. If this option is **not** provided, you can upload the keys manually in a separate step using the `upload-keys` command.
 
-    - Example:
+  - Example:
 
-        ```bash
-        cli migrate --upload
-        ```
+    ```bash
+    cli migrate --upload
+    ```
 
 - `-a, --appendixPath <appendixPath>`: Specifies the path to a file containing custom instructions (prompt appendix) for ChatGPT. This allows you to provide additional context or guidelines for the migration process.
 
-    - Example:
+  - Example:
 
-        ```bash
-        cli migrate --appendixPath "./path/to/instructions.txt"
-        ```
+    ```bash
+    cli migrate --appendixPath "./path/to/instructions.txt"
+    ```
 
 **Examples:**
 
@@ -170,13 +173,13 @@ cli migrate [options]
   ```bash
   cli migrate --appendixPath "./path/to/instructions.txt"
   ```
-  
+
 - Run the migration with a specific file pattern, automatically upload the keys, and use a custom prompt appendix:
 
   ```bash
   cli migrate --pattern "src/test_files/**/*.tsx" --upload --appendixPath "./path/to/instructions.txt"
   ```
- 
+
 <br>
 
 **Command:** `upload-keys`
@@ -185,8 +188,8 @@ The `upload-keys` command allows you to upload the localization keys that were g
 
 **Process Overview:**
 
-   1. Users **review and modify** the `allKeys.json` file and project files.
-   2. Once ready, run the upload-keys` command to upload the finalized localization strings to the Tolgee platform.
+1.  Users **review and modify** the `allKeys.json` file and project files.
+2.  Once ready, run the upload-keys` command to upload the finalized localization strings to the Tolgee platform.
 
 **Usage**
 
@@ -218,19 +221,19 @@ cli status [file] [options]
 
 - `[file]`: Specify a file path to check the migration status for that particular file.
 
-    - Example:
+  - Example:
 
-        ```bash
-        cli status src/test_files/App.tsx
-        ```
+    ```bash
+    cli status src/test_files/App.tsx
+    ```
 
 - `--all`: Show the entire migration status for all processed files.
 
-    - Example:
+  - Example:
 
-        ```bash
-        cli status --all
-        ```
+    ```bash
+    cli status --all
+    ```
 
 **Examples:**
 
@@ -272,19 +275,19 @@ cli migrate
 
 ### Complete Workflow Example
 
-   1. **Step 1:** Run the migration to process the files and generate `allKeys.json`.
-    
-        ```bash
-        cli migrate --pattern "src/test_files/**/*.tsx"
-        ```
+1.  **Step 1:** Run the migration to process the files and generate `allKeys.json`.
 
-   2. **Step 2:** Open the project files and `allKeys.json`, review and make any necessary updates or changes.
+    ```bash
+    cli migrate --pattern "src/test_files/**/*.tsx"
+    ```
 
-   3. **Step 3:** Once satisfied with the changes, upload the keys to the Tolgee platform:
+2.  **Step 2:** Open the project files and `allKeys.json`, review and make any necessary updates or changes.
 
-        ```bash
-        cli upload-keys
-        ```
+3.  **Step 3:** Once satisfied with the changes, upload the keys to the Tolgee platform:
+
+    ```bash
+    cli upload-keys
+    ```
 
 <hr>
 
@@ -298,10 +301,10 @@ returns a list of file paths that match the pattern.
 #### Example Usage:
 
 ```ts
-import {findFiles} from './findFiles';
+import { findFiles } from "./findFiles";
 
-const files = await findFiles('src/**/*.tsx');
-console.log('Files found:', files);
+const files = await findFiles("src/**/*.tsx");
+console.log("Files found:", files);
 ```
 
 ### 2. Migration Status (`migrationStatus.ts`)
@@ -317,17 +320,21 @@ status is used to track which files have already been processed, ensuring that e
 #### Example Usage:
 
 ```ts
-import {loadMigrationStatus, updateMigrationStatus, checkMigrationStatus} from './migrationStatus';
+import {
+  loadMigrationStatus,
+  updateMigrationStatus,
+  checkMigrationStatus,
+} from "./migrationStatus";
 
 // Load the migration status
 const status = await loadMigrationStatus();
-console.log('Migration Status:', status);
+console.log("Migration Status:", status);
 
 // After processing a file, update the status
-await updateMigrationStatus('src/test_files/App.tsx', ['keyName1', 'keyName2']);
+await updateMigrationStatus("src/test_files/App.tsx", ["keyName1", "keyName2"]);
 
 // Check the status of a specific file
-await checkMigrationStatus('src/test_files/App.tsx');
+await checkMigrationStatus("src/test_files/App.tsx");
 
 // Show the entire status
 await checkMigrationStatus("", true);
@@ -342,13 +349,13 @@ function returns the updated file content and the list of created localization k
 #### Example Usage:
 
 ```ts
-import {sendFileToChatGPT} from './chatGPT';
+import { sendFileToChatGPT } from "./chatGPT";
 
-const result = await sendFileToChatGPT('src/test_files/App.tsx');
-const {updatedContent, createdKeys} = result;
+const result = await sendFileToChatGPT("src/test_files/App.tsx");
+const { updatedContent, createdKeys } = result;
 
-console.log('Updated Content:', updatedContent);
-console.log('Created Keys:', createdKeys);
+console.log("Updated Content:", updatedContent);
+console.log("Created Keys:", createdKeys);
 ```
 
 #### Extracting Keys
@@ -367,21 +374,21 @@ This module is responsible for uploading the keys from the `allKeys.json` file t
 #### Example Usage:
 
 ```ts
-import { uploadKeysToTolgee } from './uploadKeysToTolgee';
+import { uploadKeysToTolgee } from "./uploadKeysToTolgee";
 
 const keys = [
-    {
-        keyName: 'menu.item.translation',
-        description: 'Menu item translation',
-        translations: { en: 'Translation' },
-    },
+  {
+    keyName: "menu.item.translation",
+    description: "Menu item translation",
+    translations: { en: "Translation" },
+  },
 ];
 
 const result = await uploadKeysToTolgee(keys);
 if (result.success) {
-    console.log(result.message); // Logs: Keys uploaded successfully
+  console.log(result.message); // Logs: Keys uploaded successfully
 } else {
-    console.error(result.message); // Logs error message if upload fails
+  console.error(result.message); // Logs error message if upload fails
 }
 ```
 
@@ -400,6 +407,7 @@ npm test
 ```
 
 You can also run specific test files:
+
 ```
 npm test tests/migrationStatus.test.ts
 ```

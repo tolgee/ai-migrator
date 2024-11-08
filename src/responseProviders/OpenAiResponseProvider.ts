@@ -1,6 +1,7 @@
 import { GetResponseProps, ResponseProvider } from "./ResponseProvider";
 import { OpenAI } from "openai";
 import { getPrompts } from "../promptsProvider";
+import { chatGptResponseFormat } from "./responseFormat";
 
 export function OpenAiResponseProvider({
   openAiApiKey,
@@ -20,6 +21,7 @@ export function OpenAiResponseProvider({
       const response = await openai.chat.completions.create(
         {
           model: "gpt-4o",
+          response_format: chatGptResponseFormat,
           messages: [
             {
               role: "system",
