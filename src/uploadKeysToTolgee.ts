@@ -1,46 +1,23 @@
-import axios from "axios";
 import { Key } from "./responseProviders/responseFormat";
+import fsExtra from "fs-extra";
+import { getFilePaths } from "./FilePaths";
+import { AllKeysFile } from "./saveAllKeys";
+import { TolgeeProjectClientType } from "./common/client/TolgeeProjectClient";
 
-interface KeyObject {
-  keyName: string;
-  description: string;
-  translations: { en: string };
-}
+export const uploadKeysToTolgee = async (client: TolgeeProjectClientType) => {
+  const { allKeysFilePath } = getFilePaths();
 
-interface TolgeeUploadResponse {
-  success: boolean;
-  message: string;
-}
+  const keys = (await fsExtra.readJson(allKeysFilePath)) as AllKeysFile;
 
-export const uploadKeysToTolgee = async (
-  keys: Key[],
-): Promise<TolgeeUploadResponse> => {
-  try {
-    const formattedKeys = keys.map((key) => ({
-      keyName: key.name,
-      description: key.description,
-      // TODO: Add support for different base language
-      translations: { en: key.default }, // English as default translation
-    }));
+  const allKeys = Object.values(keys).flat() as Key[];
 
-    await axios.post("https://tolgee.io/api/import-keys-2", {
-      keys: formattedKeys,
-    });
+  const baseLanguageTag = await client.getBaseLanguageTag();
 
-    console.log("[uploadKeysToTolgee] Keys uploaded successfully to Tolgee.");
-    return {
-      success: true,
-      message: "Keys uploaded successfully",
-    };
-  } catch (error) {
-    console.error(
-      `[uploadKeysToTolgee] Error uploading keys to Tolgee: ${error}`,
-    );
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
-    return {
-      success: false,
-      message: `Failed to upload keys: ${errorMessage}`,
-    };
-  }
+  const formattedKeys = allKeys.map((key) => ({
+    name: key.name,
+    description: key.description,
+    translations: { [baseLanguageTag]: key.default }, // English as default translation
+  }));
+
+  await client.importKeys(formattedKeys);
 };

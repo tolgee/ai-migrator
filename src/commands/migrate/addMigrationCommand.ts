@@ -12,19 +12,14 @@ export function addMigrationCommand(program: Command) {
       "src/**/*.tsx",
     )
     .option(
-      "-u, --upload",
-      "Automatically upload created keys to Tolgee",
-      false,
-    )
-    .option(
       "-a, --appendixPath <appendixPath>",
       "Path to file with custom prompt appendix",
     )
     .action(async (options) => {
-      const { pattern, upload, appendixPath } = options;
+      const { pattern, appendixPath } = options;
       try {
         // Run the migration process
-        await migrateFiles(pattern, upload, appendixPath);
+        await migrateFiles(pattern, appendixPath);
       } catch (error) {
         console.error("[cli][migrate command] Error during migration:", error);
       }

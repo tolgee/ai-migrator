@@ -40,7 +40,7 @@ localization keys to Tolgee for translation management.
 If you prefer not to install the tool globally, you can run it directly using `npx`:
 
 ```bash
-npx cli migrate [options]
+npx tolgee-migrator migrate [options]
 ```
 
 #### Option 2: Clone and Install Locally
@@ -58,49 +58,45 @@ npx cli migrate [options]
    npm install
    ```
 
-3. **Set up environment variables:** Create a `.env` file in the root of the project and add your Azure OpenAI API key, endpoint, and deployment details. If you're using OpenAI directly instead of Azure, include the OpenAI API key and endpoint as well:
-
-   ```bash
-   # Azure OpenAI setup (if using Azure)
-   AZURE_OPENAI_API_KEY=your-azure-openai-api-key-here
-   AZURE_OPENAI_ENDPOINT=https://your-azure-endpoint-url
-   AZURE_OPENAI_DEPLOYMENT=gpt-4o
-
-   # OpenAI setup (if using OpenAI directly)
-   OPENAI_API_KEY=your-openai-api-key-here
-   OPENAI_ENDPOINT=https://api.openai.com/v1/chat/completions
-   ```
-
-4. **Build the project:** This project is written in TypeScript, so you need to compile it to JavaScript before running
+3. **Build the project:** This project is written in TypeScript, so you need to compile it to JavaScript before running
    the
    commands:
    ```bash
    npm run build
    ```
-5. **Rebuild after changes:** Whenever you make changes to the TypeScript files, you need to rebuild the project by
+4. **Rebuild after changes:** Whenever you make changes to the TypeScript files, you need to rebuild the project by
    running:
    ```bash
    npm run build
    ```
-6. **Run the tool:** After building the project, you can use the CLI as described in the [Usage](#usage) section.
+5. **Run the tool:** After building the project, you can use the CLI as described in the [Usage](#usage) section.
 
 <hr>
 
-### Environment Variables
+### API Key and Endpoint Configuration
 
-For this tool, you can configure either Azure OpenAI or OpenAI directly. Set the appropriate environment variables based on the setup you're using.
+To configure the tool, provide either Azure OpenAI or OpenAI credentials through command-line arguments based on the setup you're using.
 
 **For Azure OpenAI:**
 
-- **AZURE_OPENAI_API_KEY:** The API key for OpenAI, required for interacting with the ChatGPT API.
-- **AZURE_OPENAI_ENDPOINT:** The endpoint URL for your Azure OpenAI instance, used to send API requests to Azure OpenAI.
-- **AZURE_OPENAI_DEPLOYMENT:** The name of the OpenAI model deployment in Azure, used to specify which model (e.g.,
-  gpt-4o) is being used.
+- `--azure-api-key`: The API key for Azure OpenAI, required for interacting with the ChatGPT API.
+- `--azure-endpoint`: The endpoint URL for your Azure OpenAI instance, used to send API requests to Azure OpenAI.
 
 **For OpenAI:**
 
-- **OPENAI_API_KEY:** The API key for OpenAI, required for accessing OpenAI’s ChatGPT API.
-- **OPENAI_ENDPOINT:** The endpoint URL for OpenAI, typically https://api.openai.com/v1/chat/completions.
+- `--openai-api-key`: The API key for OpenAI, required for accessing OpenAI’s ChatGPT API.
+
+For example, when running a migration, pass these arguments to set the configuration:
+
+```bash
+tolgee-migrator migrate --openai-api-key <your-openai-api-key>
+```
+
+Or, if using Azure OpenAI:
+
+```bash
+tolgee-migrator migrate --azure-api-key <your-azure-api-key> --azure-endpoint <your-azure-endpoint>
+```
 
 <hr>
 
@@ -125,17 +121,26 @@ string literals with Tolgee’s `<T>` component or `useTranslate` hook, and gene
 **Usage**
 
 ```bash
-cli migrate [options]
+tolgee-migrator migrate [options]
 ```
 
 **Options**
+
+- `-l, --log-level <level>`: Sets the logging level. Available options are `error`, `warn`, `info`, `verbose`, and `debug`. Defaults to `info.
+
+    - Example:
+
+        ```bash
+        tolgee-migrator --log-level debug migrate --pattern "src/test_files/**/*.tsx"
+        ```
+
 
 - `-p, --pattern <pattern>`: Defines the file pattern to search for files to process. The default pattern is `src/**/*.tsx`.
 
   - Example:
 
     ```bash
-    cli migrate --pattern "src/test_files/**/*.tsx"
+    tolgee-migrator migrate --pattern "src/test_files/**/*.tsx"
     ```
 
 - `-u, --upload`: Automatically uploads the created localization keys to Tolgee. If this option is **not** provided, you can upload the keys manually in a separate step using the `upload-keys` command.
@@ -143,7 +148,7 @@ cli migrate [options]
   - Example:
 
     ```bash
-    cli migrate --upload
+    tolgee-migrator migrate --upload
     ```
 
 - `-a, --appendixPath <appendixPath>`: Specifies the path to a file containing custom instructions (prompt appendix) for ChatGPT. This allows you to provide additional context or guidelines for the migration process.
@@ -151,33 +156,37 @@ cli migrate [options]
   - Example:
 
     ```bash
-    cli migrate --appendixPath "./path/to/instructions.txt"
-    ```
+    tolgee-migrator migrate --appendixPath "./path/to/instructions.txt"
+    ```- `--azure-api-key <azureApiKey>`: Specifies the Azure OpenAI API key.
+
+- `--azure-endpoint <azureEndpoint>`: Specifies the Azure OpenAI endpoint URL.
+
+- `--openai-api-key <openAiApiKey>`: Specifies the OpenAI API key.
 
 **Examples:**
 
 - Run the migration with the default file pattern and review the `allKeys.json` file before uploading:
 
   ```bash
-  cli migrate
+  tolgee-migrator migrate
   ```
 
 - Run the migration for files in the `src/test_files/` directory and automatically upload the keys:
 
   ```bash
-  cli migrate --pattern "src/test_files/**/*.tsx" --upload
+  tolgee-migrator migrate --pattern "src/test_files/**/*.tsx" --upload
   ```
 
 - Run the migration with a custom prompt appendix for ChatGPT, using the default file pattern:
 
   ```bash
-  cli migrate --appendixPath "./path/to/instructions.txt"
+  tolgee-migrator migrate --appendixPath "./path/to/instructions.txt"
   ```
 
 - Run the migration with a specific file pattern, automatically upload the keys, and use a custom prompt appendix:
 
   ```bash
-  cli migrate --pattern "src/test_files/**/*.tsx" --upload --appendixPath "./path/to/instructions.txt"
+  tolgee-migrator migrate --pattern "src/test_files/**/*.tsx" --upload --appendixPath "./path/to/instructions.txt"
   ```
 
 <br>
@@ -194,7 +203,7 @@ The `upload-keys` command allows you to upload the localization keys that were g
 **Usage**
 
 ```bash
-cli upload-keys
+tolgee-migrator upload-keys
 ```
 
 **Examples:**
@@ -202,7 +211,7 @@ cli upload-keys
 - Upload keys from `allKeys.json` to Tolgee after reviewing and finalizing them:
 
   ```bash
-  cli upload-keys
+  tolgee-migrator upload-keys
   ```
 
 <br>
@@ -214,7 +223,7 @@ The `status` command allows you to check the migration status of a specific file
 **Usage**
 
 ```bash
-cli status [file] [options]
+tolgee-migrator status [file] [options]
 ```
 
 **Options**
@@ -224,7 +233,7 @@ cli status [file] [options]
   - Example:
 
     ```bash
-    cli status src/test_files/App.tsx
+    tolgee-migrator status src/test_files/App.tsx
     ```
 
 - `--all`: Show the entire migration status for all processed files.
@@ -232,7 +241,7 @@ cli status [file] [options]
   - Example:
 
     ```bash
-    cli status --all
+    tolgee-migrator status --all
     ```
 
 **Examples:**
@@ -240,15 +249,39 @@ cli status [file] [options]
 - Check the migration status for a specific file:
 
   ```bash
-  cli status src/test_files/App.tsx
+  tolgee-migrator status src/test_files/App.tsx
   ```
 
 - Show the entire migration status:
 
   ```bash
-  cli status --all
+  tolgee-migrator status --all
   ```
 
+<hr>
+
+**Verbose Logging with Log Levels**
+
+The `tolgee-migrator` CLI supports multiple logging levels to control output verbosity.
+
+- **Default Level (info)**: Displays important messages and errors only. Shows a progress bar indicating the number of files processed.
+- **Verbose**: Displays additional information about each file currently being handled.
+- **Debug**: Logs detailed information including full prompts and responses from ChatGPT for each file.
+
+To set the log level, use the `-l` or `--log-level` option:
+
+```bash
+tolgee-migrator migrate --log-level debug
+```
+
+The available log levels are:
+
+- `error`: Only error messages.
+- `warn`: Warning and error messages.
+- `info`: Important messages, errors, and progress updates (default).
+- `verbose`: Information about each file being processed.
+- `debug`: Full output, including prompts and responses.
+    
 <hr>
 
 **Running the CLI**
@@ -256,7 +289,7 @@ cli status [file] [options]
 You can run the CLI directly using npx without global installation:
 
 ```bash
-npx cli migrate
+npx tolgee-migrator migrate
 ```
 
 Or, for a more convenient setup, you can link the package globally using:
@@ -268,17 +301,17 @@ npm link
 After linking, you can run the CLI globally:
 
 ```bash
-cli migrate
+tolgee-migrator migrate
 ```
 
 <hr>
 
 ### Complete Workflow Example
 
-1.  **Step 1:** Run the migration to process the files and generate `allKeys.json`.
+1.  **Step 1:** Run the migration to process the files , generate `allKeys.json`, and set the log level to `debug` to see all output.
 
     ```bash
-    cli migrate --pattern "src/test_files/**/*.tsx"
+    tolgee-migrator migrate --pattern "src/test_files/**/*.tsx" --log-level debug --openai-api-key <your-openai-api-key>
     ```
 
 2.  **Step 2:** Open the project files and `allKeys.json`, review and make any necessary updates or changes.
@@ -286,7 +319,7 @@ cli migrate
 3.  **Step 3:** Once satisfied with the changes, upload the keys to the Tolgee platform:
 
     ```bash
-    cli upload-keys
+    tolgee-migrator upload-keys
     ```
 
 <hr>

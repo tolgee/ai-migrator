@@ -1,9 +1,8 @@
 import fsExtra from "fs-extra";
+import { getFilePaths } from "./FilePaths";
+import logger from "./utils/logger";
 
 const { promises: fs } = fsExtra;
-
-const TOLGEE_DIR = "./.tolgee";
-const statusFilePath = `${TOLGEE_DIR}/migration-status.json`;
 
 interface MigrationStatus {
   [filePath: string]: {
@@ -19,7 +18,8 @@ export const updateMigrationStatus = async (
   success: boolean,
 ): Promise<void> => {
   try {
-    await fsExtra.ensureDir(TOLGEE_DIR);
+    const { storageDir, statusFilePath } = getFilePaths();
+    await fsExtra.ensureDir(storageDir);
     const currentStatus = await loadMigrationStatus();
 
     // Update the file status and relevant keys
@@ -45,7 +45,7 @@ export const updateMigrationStatus = async (
 // Function to load migration status
 export const loadMigrationStatus = async (): Promise<MigrationStatus> => {
   try {
-    await fsExtra.ensureDir(TOLGEE_DIR);
+    const { statusFilePath } = getFilePaths();
 
     // Check if the file exists before trying to load it
     const exists = await fsExtra.pathExists(statusFilePath);
@@ -80,7 +80,7 @@ export const checkMigrationStatus = async (
 
     if (showAll) {
       // Show the entire status file
-      console.log(
+      logger.info(
         "[migrationStatus][check] Complete migration status:",
         status,
       );
@@ -88,17 +88,17 @@ export const checkMigrationStatus = async (
       // Check status for the specific file
       const fileStatus = status[filePath];
       if (fileStatus) {
-        console.log(
+        logger.info(
           `[migrationStatus][check] Migration status for ${filePath}:`,
           fileStatus,
         );
       } else {
-        console.log(
+        logger.info(
           `[migrationStatus][check] ${filePath} has not been migrated yet.`,
         );
       }
     } else {
-      console.log(
+      logger.info(
         "[migrationStatus][check] Please provide a file to check its migration status or use the --all option to display the entire status.",
       );
     }

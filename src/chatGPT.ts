@@ -1,5 +1,4 @@
 import fsExtra from "fs-extra";
-import { extractCreatedKeys } from "./keyExtractor";
 import { getOpenAiResponse } from "./getOpenAiResponse";
 import { ChatGptResponse } from "./responseProviders/responseFormat";
 
@@ -21,11 +20,9 @@ async function loadPromptAppendix(filePath?: string): Promise<string> {
   try {
     return await fs.readFile(filePath, "utf-8");
   } catch (error) {
-    console.error(
-      `[chatGPT] Error: Failed to read prompt appendix from ${filePath}:`,
-      error,
+    throw new Error(
+      `[chatGPT] Error loading prompt appendix or path ${filePath}`,
     );
-    return "";
   }
 }
 
@@ -48,9 +45,9 @@ async function requestCompleteResponse(
     return response;
   } catch (e) {
     if (e instanceof SyntaxError) {
-      console.log("[chatGPT] Error parsing response JSON:", responseJson);
-      responseJson
+      throw Error("[chatGPT] Error parsing response JSON");
     }
+    throw e;
   }
 }
 

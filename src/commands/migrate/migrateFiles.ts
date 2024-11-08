@@ -5,12 +5,12 @@ import {saveKeys} from "../../saveAllKeys";
 import {checkGitClean} from "../../common/checkGitClean";
 import {sendFileToChatGPT} from "../../chatGPT";
 import fsExtra from "fs-extra";
+import logger from "../../utils/logger";
 
 const { promises: fs } = fsExtra;
 
 export const migrateFiles = async (
   filePattern: string,
-  confirmUpload: boolean,
   appendixPath?: string,
 ) => {
   try {
@@ -23,11 +23,11 @@ export const migrateFiles = async (
     const files = await findFiles(filePattern);
 
     if (!files || files.length === 0) {
-      console.log("[cli][migrateFiles] No files found for the given pattern.");
+      logger.info("[cli][migrateFiles] No files found for the given pattern.");
       return;
     }
 
-    console.log(
+    logger.info(
       `[cli][migrateFiles] Found ${files.length} files. Starting migration...`,
     );
 
@@ -35,7 +35,7 @@ export const migrateFiles = async (
     //iterate over index and value
     for (let index = 0; index < files.length; index++) {
       const keysFilePath = files[index];
-      console.log(
+      logger.info(
         `[cli][migrateFiles] Processing file ${index + 1}/${files.length}: ${keysFilePath}`,
       );
       const keys = await processFile(keysFilePath, appendixPath);
@@ -57,7 +57,7 @@ const processFile = async (
 
   // Skip already processed files
   if (status[file] && status[file].migrated) {
-    console.log(
+    logger.info(
       `[cli][processFile] Skipping already processed file: ${file}`,
     );
     return [];
@@ -70,7 +70,7 @@ const processFile = async (
     const { newFileContents, keys } = result;
 
     if(keys.length === 0){
-      console.log(
+      logger.info(
         `[cli][processFile] No keys found in file: ${file}`,
       );
       await updateMigrationStatus(file, [], false);
@@ -79,7 +79,7 @@ const processFile = async (
 
     // Overwrite the original file
     await fs.writeFile(file, newFileContents, "utf8");
-    console.log(
+    logger.info(
       `[cli][processFile] File ${file} has been updated successfully.`,
     );
 
@@ -89,13 +89,13 @@ const processFile = async (
     // Mark the file as processed and include relevant keys
     await updateMigrationStatus(file, relevantKeys, true);
 
-    console.log(
+    logger.info(
       `[cli][processFile] Successfully processed and updated file: ${file}`,
     );
 
     return keys;
   } catch (e) {
-    console.error(`[cli][processFile] Migration failed for file: ${file}`, e);
+    logger.error(`[cli][processFile] Migration failed for file: ${file}`, e);
 
     // Update migration status to indicate failure
     await updateMigrationStatus(file, [], false); // Pass false to mark as not migrated
