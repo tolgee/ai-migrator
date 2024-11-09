@@ -1,9 +1,9 @@
-import { Command, Option } from "commander";
-import { migrateFiles } from "./migrateFiles";
+import { Command } from "commander";
 import { presetShape, PresetType } from "../../presets/PresetType";
 import { buildNativePreset } from "../../presets/buildNativePreset";
 import { z } from "zod";
 import logger from "../../utils/logger";
+import { FilesMigrator } from "./FilesMigrator";
 
 export function addMigrationCommand(program: Command) {
   // Migrate command
@@ -20,14 +20,22 @@ export function addMigrationCommand(program: Command) {
       "Path to file with custom prompt appendix",
     )
     .option("-r, --preset <preset>", "Preset to use for migration", "react")
+    .option(
+      "-c, --chunk-size <chunkSize>",
+      "Chunk size for files processing. If greater than 1, files will be sent to ChatGPT in parallel.",
+      "5",
+    )
     .action(async (options) => {
-      const { pattern, appendixPath, preset } = options;
+      const { pattern, appendixPath, preset, chunkSize } = options;
       // Run the migration process
-      await migrateFiles({
+      const migrator = FilesMigrator({
         filePattern: pattern,
         preset: getAndValidatePreset(preset),
         appendixPath: appendixPath,
+        chunkSize: parseInt(chunkSize),
       });
+
+      await migrator.migrateFiles();
     });
 }
 

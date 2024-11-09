@@ -1,55 +1,62 @@
 import fsExtra from "fs-extra";
 import { getFilePaths } from "./FilePaths";
 import logger from "./utils/logger";
+import { Key } from "./responseProviders/responseFormat";
+import path from "node:path";
 
 const { promises: fs } = fsExtra;
 
-interface MigrationStatus {
+export interface MigrationStatus {
   [filePath: string]: {
     migrated: boolean;
-    relevantKeys: string[];
+    keys: Key[];
   };
 }
 
-// Function to update migration status
-export const updateMigrationStatus = async (
-  filePath: string,
-  relevantKeys: string[],
-  success: boolean,
-): Promise<void> => {
-  try {
-    const { storageDir, statusFilePath } = getFilePaths();
-    await fsExtra.ensureDir(storageDir);
-    const currentStatus = await loadMigrationStatus();
+export interface FileStatus {
+  filePath: string;
+  keys: Key[];
+  success: boolean;
+}
 
+interface UpdateMigrationStatusProps {
+  fileStatuses: FileStatus[];
+  currentStatus: MigrationStatus;
+}
+
+// Function to update migration status
+export const updateMigrationStatus = async ({
+                                              currentStatus,
+                                              fileStatuses,
+                                            }: UpdateMigrationStatusProps): Promise<void> => {
+  const {storageDir, statusFilePath} = getFilePaths();
+  await fsExtra.ensureDir(storageDir);
+
+  fileStatuses.forEach(({ filePath, keys, success }) => {
     // Update the file status and relevant keys
     currentStatus[filePath] = {
       migrated: success,
-      relevantKeys,
+      keys,
     };
+  });
 
-    // Write the updated status back to the JSON file
-    await fs.writeFile(
-      statusFilePath,
-      JSON.stringify(currentStatus, null, 2),
-      "utf8",
-    );
-  } catch (error) {
-    console.error(
-      "[migrationStatus][update] Error updating migration status:",
-      error,
-    );
-  }
+  // Write the updated status back to the JSON file
+  await fs.writeFile(
+    statusFilePath,
+    JSON.stringify(currentStatus, null, 2),
+    "utf8",
+  );
 };
 
 // Function to load migration status
 export const loadMigrationStatus = async (): Promise<MigrationStatus> => {
-  try {
     const { statusFilePath } = getFilePaths();
 
     // Check if the file exists before trying to load it
     const exists = await fsExtra.pathExists(statusFilePath);
     if (!exists) {
+      const dirname = path.dirname(statusFilePath)
+      await fsExtra.ensureDir(dirname);
       await fsExtra.writeJson(statusFilePath, {});
     }
 
@@ -62,12 +69,6 @@ export const loadMigrationStatus = async (): Promise<MigrationStatus> => {
       // File is not empty
       return JSON.parse(fileContent) as MigrationStatus;
     }
-  } catch (error) {
-    console.error(
-      `[migrationStatus][load] Error loading migration status: ${error}`,
-    );
-    return {};
-  }
 };
 
 // Function to check the migration status of a specific file or show the entire status

@@ -1,15 +1,12 @@
-import { Key } from "./responseProviders/responseFormat";
-import fsExtra from "fs-extra";
-import { getFilePaths } from "./FilePaths";
-import { AllKeysFile } from "./saveAllKeys";
 import { TolgeeProjectClientType } from "./common/client/TolgeeProjectClient";
+import { loadMigrationStatus } from "./migrationStatus";
 
 export const uploadKeysToTolgee = async (client: TolgeeProjectClientType) => {
-  const { allKeysFilePath } = getFilePaths();
+  const status = await loadMigrationStatus();
 
-  const keys = (await fsExtra.readJson(allKeysFilePath)) as AllKeysFile;
-
-  const allKeys = Object.values(keys).flat() as Key[];
+  const allKeys = Object.values(status)
+    .map((fileStatus) => fileStatus.keys)
+    .flat();
 
   const baseLanguageTag = await client.getBaseLanguageTag();
 

@@ -1,9 +1,21 @@
 #!/usr/bin/env node
 
-import { setLogLevel } from "./utils/logger";
-import {createProgram} from "./program";
+import logger, { setLogLevel } from "./utils/logger";
+import { createProgram } from "./program";
 
-const program = createProgram();
-program.parse(process.argv); // Parse the command-line arguments
+async function main() {
+  const program = createProgram();
+  try {
+    const promise = program.parseAsync(process.argv); // Parse the command-line arguments
 
-setLogLevel(program.opts().logLevel);
+    const logLevel = program.opts().logLevel;
+    setLogLevel(logLevel);
+    await promise;
+  } catch (e) {
+    logger.error(e);
+    process.exit(1);
+  }
+}
+
+main();
+

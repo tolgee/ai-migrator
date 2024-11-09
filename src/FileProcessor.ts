@@ -2,17 +2,27 @@ import fsExtra from "fs-extra";
 import { ChatGptResponse } from "./responseProviders/responseFormat";
 import { PresetType } from "./presets/PresetType";
 import { createResponseProvider } from "./responseProviders/createResponseProvider";
+import logger from "./utils/logger";
 
 const { promises: fs } = fsExtra;
+
+export type FileProcessorType = ReturnType<typeof FileProcessor>;
+export type ProcessFileReturnType =
+  ReturnType<FileProcessorType["processFile"]> extends Promise<infer T>
+    ? T
+    : never;
 
 export function FileProcessor(preset: PresetType) {
   const responseProvider = createResponseProvider(preset);
 
-  // Function to send file content to ChatGPT for migration
   async function processFile(filePath: string, promptAppendixPath?: string) {
+    logger.info(`[FileProcessor] Processing file: ${filePath}`);
     const fileContent = await fs.readFile(filePath, "utf-8");
     const promptAppendix = await loadPromptAppendix(promptAppendixPath);
-    return await requestCompleteResponse(fileContent, promptAppendix);
+    const result = await requestCompleteResponse(fileContent, promptAppendix);
+    await fs.writeFile(filePath, result.newFileContents);
+    logger.info(`[FileProcessor] Processed file: ${filePath} ✅`);
+    return result;
   }
 
   // Function to load prompt appendix from a file if path is provided
