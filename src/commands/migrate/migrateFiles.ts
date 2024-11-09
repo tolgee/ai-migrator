@@ -1,18 +1,29 @@
 // Main function to handle file migration interactively
-import {loadMigrationStatus, updateMigrationStatus} from "../../migrationStatus";
-import {findFiles} from "../../findFiles";
-import {saveKeys} from "../../saveAllKeys";
-import {checkGitClean} from "../../common/checkGitClean";
-import {sendFileToChatGPT} from "../../chatGPT";
+import {
+  loadMigrationStatus,
+  updateMigrationStatus,
+} from "../../migrationStatus";
+import { findFiles } from "../../findFiles";
+import { saveKeys } from "../../saveAllKeys";
+import { checkGitClean } from "../../common/checkGitClean";
 import fsExtra from "fs-extra";
 import logger from "../../utils/logger";
+import { PresetType } from "../../presets/PresetType";
+import { FileProcessor } from "../../FileProcessor";
 
 const { promises: fs } = fsExtra;
 
-export const migrateFiles = async (
-  filePattern: string,
-  appendixPath?: string,
-) => {
+interface MigrateFilesParams {
+  filePattern: string;
+  preset: PresetType;
+  appendixPath?: string;
+}
+
+export const migrateFiles = async ({
+  filePattern,
+  preset,
+  appendixPath,
+}: MigrateFilesParams) => {
   try {
     // Check if the Git working directory is clean
     if (!checkGitClean()) {
@@ -38,7 +49,7 @@ export const migrateFiles = async (
       logger.info(
         `[cli][migrateFiles] Processing file ${index + 1}/${files.length}: ${keysFilePath}`,
       );
-      const keys = await processFile(keysFilePath, appendixPath);
+      const keys = await processFile(keysFilePath, preset, appendixPath);
       await saveKeys(keysFilePath, keys);
     }
   } catch (error) {
@@ -48,31 +59,32 @@ export const migrateFiles = async (
   }
 };
 
+// TODO: Refactor and batch it to improve performance
+//   Move single file logic to FileProcessor
 // Function to process a single file
 const processFile = async (
   file: string,
+  preset: PresetType,
   appendixPath?: string,
 ) => {
   const status = await loadMigrationStatus();
 
   // Skip already processed files
   if (status[file] && status[file].migrated) {
-    logger.info(
-      `[cli][processFile] Skipping already processed file: ${file}`,
-    );
+    logger.info(`[cli][processFile] Skipping already processed file: ${file}`);
     return [];
   }
 
+  const fileProcessor = FileProcessor(preset);
+
   try {
     // Send the file content to ChatGPT for localization
-    const result = await sendFileToChatGPT(file, appendixPath);
+    const result = await fileProcessor.processFile(file, appendixPath);
 
     const { newFileContents, keys } = result;
 
-    if(keys.length === 0){
-      logger.info(
-        `[cli][processFile] No keys found in file: ${file}`,
-      );
+    if (keys.length === 0) {
+      logger.info(`[cli][processFile] No keys found in file: ${file}`);
       await updateMigrationStatus(file, [], false);
       return [];
     }

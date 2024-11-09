@@ -1,5 +1,9 @@
-import {Command} from "commander";
-import {migrateFiles} from "./migrateFiles";
+import { Command, Option } from "commander";
+import { migrateFiles } from "./migrateFiles";
+import { presetShape, PresetType } from "../../presets/PresetType";
+import { buildNativePreset } from "../../presets/buildNativePreset";
+import { z } from "zod";
+import logger from "../../utils/logger";
 
 export function addMigrationCommand(program: Command) {
   // Migrate command
@@ -15,13 +19,39 @@ export function addMigrationCommand(program: Command) {
       "-a, --appendixPath <appendixPath>",
       "Path to file with custom prompt appendix",
     )
+    .option("-r, --preset <preset>", "Preset to use for migration", "react")
     .action(async (options) => {
-      const { pattern, appendixPath } = options;
-      try {
-        // Run the migration process
-        await migrateFiles(pattern, appendixPath);
-      } catch (error) {
-        console.error("[cli][migrate command] Error during migration:", error);
-      }
+      const { pattern, appendixPath, preset } = options;
+      // Run the migration process
+      await migrateFiles({
+        filePattern: pattern,
+        preset: getAndValidatePreset(preset),
+        appendixPath: appendixPath,
+      });
     });
+}
+
+function getAndValidatePreset(preset: string): PresetType {
+  const presetObject = getPreset(preset);
+  try {
+    validatePreset(presetObject);
+  } catch (e) {
+    if (e instanceof z.ZodError) {
+      logger.error(`Invalid custom preset: ${preset}`, e.errors);
+      throw e;
+    }
+  }
+  return presetObject;
+}
+
+function getPreset(preset: string): PresetType {
+  if (preset.endsWith(".js")) {
+    return require(preset);
+  }
+
+  return buildNativePreset(preset);
+}
+
+export function validatePreset(preset: PresetType) {
+  presetShape.parse(preset);
 }

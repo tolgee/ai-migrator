@@ -32,5 +32,4 @@ package-lock.json
 *.swp
 
 # Ignore compiled TypeScript files
-*.js
-*.d.ts
+/dist

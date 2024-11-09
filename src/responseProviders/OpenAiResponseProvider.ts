@@ -1,12 +1,14 @@
 import { GetResponseProps, ResponseProvider } from "./ResponseProvider";
 import { OpenAI } from "openai";
-import { getPrompts } from "../promptsProvider";
+import { PromptsProviderType } from "../PromptsProvider";
 import { chatGptResponseFormat } from "./responseFormat";
 
 export function OpenAiResponseProvider({
   openAiApiKey,
+  promptsProvider,
 }: {
   openAiApiKey: string;
+  promptsProvider: PromptsProviderType;
 }): ResponseProvider {
   const openai = new OpenAI({
     apiKey: openAiApiKey,
@@ -16,7 +18,7 @@ export function OpenAiResponseProvider({
     async getResponse(
       props: GetResponseProps,
     ): Promise<string | null | undefined> {
-      const { completeSystemPrompt, userPrompt } = getPrompts(props);
+      const { systemPrompt, userPrompt } = promptsProvider.getPrompts(props);
 
       const response = await openai.chat.completions.create(
         {
@@ -25,7 +27,7 @@ export function OpenAiResponseProvider({
           messages: [
             {
               role: "system",
-              content: completeSystemPrompt,
+              content: systemPrompt,
             },
             {
               role: "user",

@@ -1,26 +1,30 @@
 import { GetResponseProps, ResponseProvider } from "./ResponseProvider";
-import { getPrompts } from "../promptsProvider";
 import { AzureOpenAI } from "openai";
 import { chatGptResponseFormat } from "./responseFormat";
+import { PromptsProviderType } from "../PromptsProvider";
 
-export function AzureResponseProvider(config: {
-  apiVersion: string;
-  azureApiKey: any;
-  azureEndpoint: any;
-  deployment: any;
+export function AzureResponseProvider(providerProps: {
+  config: {
+    apiVersion: string;
+    azureApiKey: any;
+    azureEndpoint: any;
+    deployment: any;
+  };
+  promptsProvider: PromptsProviderType;
 }): ResponseProvider {
   const azureClient = new AzureOpenAI({
-    apiKey: config.azureApiKey,
-    endpoint: config.azureEndpoint,
-    deployment: config.deployment,
-    apiVersion: config.apiVersion,
+    apiKey: providerProps.config.azureApiKey,
+    endpoint: providerProps.config.azureEndpoint,
+    deployment: providerProps.config.deployment,
+    apiVersion: providerProps.config.apiVersion,
   });
 
   return {
     async getResponse(
       props: GetResponseProps,
     ): Promise<string | null | undefined> {
-      const { completeSystemPrompt, userPrompt } = getPrompts(props);
+      const { systemPrompt, userPrompt } =
+        providerProps.promptsProvider.getPrompts(props);
 
       const response = await azureClient.chat.completions.create({
         model: "gpt-4o",
@@ -29,7 +33,7 @@ export function AzureResponseProvider(config: {
         messages: [
           {
             role: "system",
-            content: completeSystemPrompt,
+            content: systemPrompt,
           },
           {
             role: "user",
