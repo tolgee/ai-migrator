@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import {checkMigrationStatus} from "../../migrationStatus";
+import { checkMigrationStatus } from "../../migrationStatus";
 
 export function addStatusCommand(program: Command) {
   program

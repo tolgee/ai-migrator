@@ -55,7 +55,10 @@ function getUrl({
   return `${origin}/v2/projects/${projectId}${endpointPath}`;
 }
 
-function getProjectId(props: { apiKey: string; passedProjectId: string | number }) {
+function getProjectId(props: {
+  apiKey: string;
+  passedProjectId: string | number;
+}) {
   if (props.passedProjectId) {
     return props.passedProjectId;
   }

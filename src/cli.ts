@@ -18,4 +18,3 @@ async function main() {
 }
 
 main();
-

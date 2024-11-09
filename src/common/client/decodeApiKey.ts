@@ -1,10 +1,10 @@
-const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
 function readChar(char: string) {
   const idx = alphabet.indexOf(char);
 
   if (idx === -1) {
-    throw new Error('Invalid character found: ' + char);
+    throw new Error("Invalid character found: " + char);
   }
 
   return idx;
@@ -13,7 +13,7 @@ function readChar(char: string) {
 function arrayBufferToString(buffer: any) {
   const bufView = new Uint8Array(buffer);
   const length = bufView.length;
-  let result = '';
+  let result = "";
   let addition = Math.pow(2, 16) - 1;
 
   for (let i = 0; i < length; i += addition) {
@@ -23,7 +23,7 @@ function arrayBufferToString(buffer: any) {
     result += String.fromCharCode.apply(
       null,
       // @ts-ignore
-      bufView.subarray(i, i + addition)
+      bufView.subarray(i, i + addition),
     );
   }
 
@@ -55,15 +55,15 @@ function base32Decode(input: string) {
 }
 
 export function getProjectIdFromApiKey(
-  key: string | undefined
+  key: string | undefined,
 ): number | undefined {
   if (!key) {
     return undefined;
   }
   try {
-    const [prefix, rest] = key.split('_');
-    if (prefix === 'tgpak') {
-      const [projectId] = base32Decode(rest).split('_');
+    const [prefix, rest] = key.split("_");
+    if (prefix === "tgpak") {
+      const [projectId] = base32Decode(rest).split("_");
       return Number(projectId);
     }
   } catch {

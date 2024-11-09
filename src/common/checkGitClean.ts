@@ -1,5 +1,5 @@
 // Function to check if the Git working directory is clean
-import {execSync} from "child_process";
+import { execSync } from "child_process";
 
 export function checkGitClean(): boolean {
   const result = execSync("git status --porcelain").toString().trim();

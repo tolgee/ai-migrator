@@ -31,7 +31,10 @@ export function createResponseProvider(preset: PresetType): ResponseProvider {
         promptsProvider,
       });
     case "OPENAI":
-      return OpenAiResponseProvider({ openAiApiKey: openAiApiKey!, promptsProvider });
+      return OpenAiResponseProvider({
+        openAiApiKey: openAiApiKey!,
+        promptsProvider,
+      });
   }
 }
 

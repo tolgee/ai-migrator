@@ -21,18 +21,18 @@ export function addMigrationCommand(program: Command) {
     )
     .option("-r, --preset <preset>", "Preset to use for migration", "react")
     .option(
-      "-c, --chunk-size <chunkSize>",
-      "Chunk size for files processing. If greater than 1, files will be sent to ChatGPT in parallel.",
-      "5",
+      "-c, --concurrency <concurrency>",
+      "Number of files to process concurrently",
+      "10",
     )
     .action(async (options) => {
-      const { pattern, appendixPath, preset, chunkSize } = options;
+      const { pattern, appendixPath, preset, concurrency } = options;
       // Run the migration process
       const migrator = FilesMigrator({
         filePattern: pattern,
         preset: getAndValidatePreset(preset),
         appendixPath: appendixPath,
-        chunkSize: parseInt(chunkSize),
+        concurrency: parseInt(concurrency),
       });
 
       await migrator.migrateFiles();

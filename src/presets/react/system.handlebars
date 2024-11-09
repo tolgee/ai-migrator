@@ -13,6 +13,7 @@ Follow these important rules:
     - <input placeholder="New list item" /> should become <input placeholder={t('new-list-item-input-placeholder')}) />
 - **Use T component only for suitable places. When the target needs string for some reason, use t function and add useTranslate hook to the component top.
 - Import T or useTranslate it from @tolgee/react package. Import only what you need! Don't forget to use useTranslate, but use it only when required!
+- This is the right way to get t function using useTranslate(): `const { t } = useTranslate();`
 - Never keep default in the code (it's stored to the json files')
   - e.g. Don't do `<T keyName="save-button">Save</T>`, instead do `<T keyName="save-button" />`
   - e.g. Don't do `t('new-list-item-input-placeholder', 'New list item')`, instead do `t('new-list-item-input-placeholder')`

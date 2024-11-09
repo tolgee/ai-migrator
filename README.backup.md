@@ -128,12 +128,11 @@ tolgee-migrator migrate [options]
 
 - `-l, --log-level <level>`: Sets the logging level. Available options are `error`, `warn`, `info`, `verbose`, and `debug`. Defaults to `info.
 
-    - Example:
+  - Example:
 
-        ```bash
-        tolgee-migrator --log-level debug migrate --pattern "src/test_files/**/*.tsx"
-        ```
-
+    ```bash
+    tolgee-migrator --log-level debug migrate --pattern "src/test_files/**/*.tsx"
+    ```
 
 - `-p, --pattern <pattern>`: Defines the file pattern to search for files to process. The default pattern is `src/**/*.tsx`.
 
@@ -155,9 +154,10 @@ tolgee-migrator migrate [options]
 
   - Example:
 
-    ```bash
+    ````bash
     tolgee-migrator migrate --appendixPath "./path/to/instructions.txt"
     ```- `--azure-api-key <azureApiKey>`: Specifies the Azure OpenAI API key.
+    ````
 
 - `--azure-endpoint <azureEndpoint>`: Specifies the Azure OpenAI endpoint URL.
 
@@ -281,7 +281,7 @@ The available log levels are:
 - `info`: Important messages, errors, and progress updates (default).
 - `verbose`: Information about each file being processed.
 - `debug`: Full output, including prompts and responses.
-    
+
 <hr>
 
 **Running the CLI**

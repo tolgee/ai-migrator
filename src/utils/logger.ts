@@ -5,10 +5,15 @@ const logLevel = process.env.LOG_LEVEL || "info"; // Default to "info"
 const logger = winston.createLogger({
   level: logLevel,
   format: winston.format.combine(
+    winston.format.errors({ stack: true }),
     winston.format.colorize(),
     winston.format.timestamp(),
-    winston.format.printf(({ timestamp, level, message }) => {
-      return `[${timestamp}] ${level}: ${message}`;
+    winston.format.printf(({ timestamp, level, message, stack }) => {
+      if (!stack) {
+        return `[${timestamp}] ${level}: ${message}`;
+      } else {
+        return `[${timestamp}] ${level}: ${message}\n${stack}`;
+      }
     }),
   ),
   transports: [

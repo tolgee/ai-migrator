@@ -1,5 +1,5 @@
-import {z} from "zod";
-import {zodResponseFormat} from "openai/helpers/zod";
+import { z } from "zod";
+import { zodResponseFormat } from "openai/helpers/zod";
 
 const keySchema = z.object({
   name: z.string(),

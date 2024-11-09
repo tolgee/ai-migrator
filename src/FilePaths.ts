@@ -13,9 +13,9 @@ function FilePaths(workingDir?: string) {
     allKeysFilePath,
     statusFilePath,
     storageDir,
-  }
+  };
 }
 
-export function getFilePaths(){
+export function getFilePaths() {
   return FilePaths();
 }

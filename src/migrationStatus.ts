@@ -24,12 +24,15 @@ interface UpdateMigrationStatusProps {
   currentStatus: MigrationStatus;
 }
 
+let writingPromise: Promise<any> | null = Promise.resolve();
+
 // Function to update migration status
 export const updateMigrationStatus = async ({
-                                              currentStatus,
-                                              fileStatuses,
-                                            }: UpdateMigrationStatusProps): Promise<void> => {
-  const {storageDir, statusFilePath} = getFilePaths();
+  currentStatus,
+  fileStatuses,
+}: UpdateMigrationStatusProps): Promise<void> => {
+  await writingPromise;
+  const { storageDir, statusFilePath } = getFilePaths();
   await fsExtra.ensureDir(storageDir);
 
   fileStatuses.forEach(({ filePath, keys, success }) => {
@@ -50,25 +53,25 @@ export const updateMigrationStatus = async ({
 
 // Function to load migration status
 export const loadMigrationStatus = async (): Promise<MigrationStatus> => {
-    const { statusFilePath } = getFilePaths();
+  const { statusFilePath } = getFilePaths();
 
-    // Check if the file exists before trying to load it
-    const exists = await fsExtra.pathExists(statusFilePath);
-    if (!exists) {
-      const dirname = path.dirname(statusFilePath)
-      await fsExtra.ensureDir(dirname);
-      await fsExtra.writeJson(statusFilePath, {});
-    }
+  // Check if the file exists before trying to load it
+  const exists = await fsExtra.pathExists(statusFilePath);
+  if (!exists) {
+    const dirname = path.dirname(statusFilePath);
+    await fsExtra.ensureDir(dirname);
+    await fsExtra.writeJson(statusFilePath, {});
+  }
 
-    // If the file exists, load it
-    const fileContent = await fs.readFile(statusFilePath, "utf8");
-    if (!fileContent.trim()) {
-      // File is empty
-      return {};
-    } else {
-      // File is not empty
-      return JSON.parse(fileContent) as MigrationStatus;
-    }
+  // If the file exists, load it
+  const fileContent = await fs.readFile(statusFilePath, "utf8");
+  if (!fileContent.trim()) {
+    // File is empty
+    return {};
+  } else {
+    // File is not empty
+    return JSON.parse(fileContent) as MigrationStatus;
+  }
 };
 
 // Function to check the migration status of a specific file or show the entire status

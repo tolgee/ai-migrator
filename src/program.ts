@@ -1,7 +1,7 @@
 import { Command, Option } from "commander";
 import { addMigrationCommand } from "./commands/migrate/addMigrationCommand";
 import { addStatusCommand } from "./commands/status/addStatusCommand";
-import { addUploadCommand } from "./commands/upload/addUploadCommand"
+import { addUploadCommand } from "./commands/upload/addUploadCommand";
 
 export function createProgram(): Command {
   // Setup Commander CLI

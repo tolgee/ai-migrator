@@ -4,7 +4,7 @@ import { validatePreset } from "../src/commands/migrate/addMigrationCommand";
 import Mock = jest.Mock;
 import { createProgram } from "../src/program";
 import path from "node:path";
-import {ZodError} from "zod";
+import { ZodError } from "zod";
 
 jest.mock("fast-glob");
 jest.mock("../src/commands/migrate/migrateFiles");
@@ -25,7 +25,7 @@ describe("presets", () => {
       try {
         await runWithPreset("invalid-preset.js");
       } catch (e) {
-        const zodError = (e as ZodError)
+        const zodError = e as ZodError;
         const message = zodError.message;
         expect(message).toContain("invalid_type");
         expect(message).toContain("getUserPrompt");

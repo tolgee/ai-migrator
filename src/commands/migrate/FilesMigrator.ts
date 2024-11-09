@@ -1,6 +1,4 @@
-// Main function to handle file migration interactively
 import {
-  FileStatus,
   loadMigrationStatus,
   updateMigrationStatus,
 } from "../../migrationStatus";
@@ -8,30 +6,28 @@ import { findFiles } from "../../findFiles";
 import { checkGitClean } from "../../common/checkGitClean";
 import logger from "../../utils/logger";
 import { PresetType } from "../../presets/PresetType";
-import { FileProcessor, ProcessFileReturnType } from "../../FileProcessor";
+import { FileProcessor } from "../../FileProcessor";
 
 interface FilesMigratorProps {
   filePattern: string;
   preset: PresetType;
   appendixPath?: string;
-  chunkSize: number;
+  concurrency: number;
 }
 
 export function FilesMigrator({
   filePattern,
   preset,
   appendixPath,
-  chunkSize,
+  concurrency,
 }: FilesMigratorProps) {
   const fileProcessor = FileProcessor(preset);
 
   const migrateFiles = async () => {
-    // Check if the Git working directory is clean
     if (!checkGitClean()) {
       return;
     }
 
-    // Find the files to process
     const files = await findFiles(filePattern);
 
     if (!files || files.length === 0) {
@@ -43,73 +39,64 @@ export function FilesMigrator({
       `[cli][migrateFiles] Found ${files.length} files. Starting migration...`,
     );
 
-    async function processChunk(chunk: string[]) {
-      const status = await loadMigrationStatus();
-      const all = await Promise.all(
-        chunk.map((file) => {
-          // Skip already processed files
-          if (status[file] && status[file].migrated) {
-            logger.info(
-              `[cli][processFile] Skipping already processed file: ${file}`,
-            );
-            return null;
+    const fileQueue = [...files];
+    const activePromises: Promise<void>[] = [];
+    let processed = 0;
+
+    const status = await loadMigrationStatus();
+
+    const processFile = async (file: string) => {
+      if (status[file] && status[file].migrated) {
+        logger.info(
+          `[cli][processFile] Skipping already processed file: ${file}`,
+        );
+        return;
+      }
+
+      try {
+        logger.info(`[FileProcessor] Processing file: ${file}`);
+        const result = await fileProcessor.processFile(file, appendixPath);
+        logger.info(
+          `[FileProcessor] Processed file: ${file} ✅ ${++processed}/${files.length}`,
+        );
+        await updateMigrationStatus({
+          currentStatus: status,
+          fileStatuses: [{ filePath: file, keys: result.keys, success: true }],
+        });
+      } catch (error) {
+        logger.error(
+          `[cli][processFile] Error processing file: ${file}`,
+          error,
+        );
+        await updateMigrationStatus({
+          currentStatus: status,
+          fileStatuses: [{ filePath: file, keys: [], success: false }],
+        });
+      }
+    };
+
+    const processQueue = async () => {
+      while (fileQueue.length > 0) {
+        if (activePromises.length < concurrency) {
+          const file = fileQueue.shift();
+          if (file) {
+            const promise = processFile(file).then(() => {
+              activePromises.splice(activePromises.indexOf(promise), 1);
+            });
+            activePromises.push(promise);
           }
-
-          return fileProcessor
-            .processFile(file, appendixPath)
-            .then((result) => ({
-              result: result as ProcessFileReturnType,
-              filePath: file,
-              error: undefined,
-            }))
-            .catch((e) => ({
-              filePath: file,
-              error: e,
-              result: undefined as ProcessFileReturnType | undefined,
-            }));
-        }),
-      );
-      const fileStatuses: FileStatus[] = all.map((result) => {
-        if (!result) {
-          throw Error("No result from processFile");
+        } else {
+          await Promise.race(activePromises);
         }
+      }
+      await Promise.all(activePromises);
+    };
 
-        if (!result.error) {
-          if (!result.result) {
-            throw Error("No error and no result from processFile");
-          }
-          return {
-            filePath: result.filePath,
-            keys: result.result.keys,
-            success: true,
-          };
-        }
-
-        return {
-          filePath: result.filePath,
-          keys: [] as any,
-          success: false,
-        };
-      });
-      await updateMigrationStatus({ currentStatus: status, fileStatuses });
-    }
-
-    await forEachChunk(files, chunkSize, async (chunk) => {
-      await processChunk(chunk);
-    });
+    await processQueue();
+    logger.info("[cli][migrateFiles] Migration completed.");
   };
 
   return {
     migrateFiles,
   };
-}
-
-async function forEachChunk<T>(
-  arr: T[],
-  chunkSize: number,
-  callback: (chunk: T[]) => Promise<void>,
-) {
-  for (let i = 0; i < arr.length; i += chunkSize) {
-    await callback(arr.slice(i, i + chunkSize));
-  }
 }
