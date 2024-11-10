@@ -3,6 +3,13 @@ import * as path from "node:path";
 import { buildNativePreset } from "../src/presets/buildNativePreset";
 import dotenv from "dotenv";
 
+jest.mock("fs-extra", () => ({
+  promises: {
+    readFile: jest.requireActual("fs-extra").promises.readFile,
+    writeFile: jest.fn()
+  },
+}));
+
 describe("Chat GPT", () => {
   const fileProcessor = createFileProcessor();
 

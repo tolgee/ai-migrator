@@ -1,8 +1,7 @@
 {
-  "name": "ai-migrator",
-  "version": "1.0.0",
-  "description": "AI migration tool for Tolgee",
-  "main": "./src/cli.js",
+  "name": "@tolgee/ai-migrator",
+  "version": "1.0.0-alpha.1",
+  "description": "AI migration tool to migrate your project from raw string to Tolgee SDKs",
   "bin": {
     "tolgee-migrator": "./dist/src/cli.js"
   },
@@ -13,6 +12,11 @@
     "format": "eslint --fix",
     "eslint": "eslint --max-warnings 0"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "keywords": [],
   "author": "",
   "license": "ISC",
