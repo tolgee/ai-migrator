@@ -13,7 +13,7 @@ export function addMigrationCommand(program: Command) {
     .option(
       "-p, --pattern <pattern>",
       "File pattern to search for (e.g., src/**/*.tsx)",
-      "src/**/*.tsx",
+      "src/**/*",
     )
     .option(
       "-a, --appendixPath <appendixPath>",
