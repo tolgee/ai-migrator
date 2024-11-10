@@ -36,7 +36,7 @@ export type TolgeeProjectClientType = ReturnType<typeof TolgeeProjectClient>;
 type AuthProps = {
   apiKey: string;
   apiUrl: string;
-  projectId: string | number;
+  projectId: string | number | undefined;
 };
 
 function getUrl({
@@ -57,7 +57,7 @@ function getUrl({
 
 function getProjectId(props: {
   apiKey: string;
-  passedProjectId: string | number;
+  passedProjectId: string | number | undefined;
 }) {
   if (props.passedProjectId) {
     return props.passedProjectId;
