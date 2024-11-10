@@ -28,12 +28,12 @@ jobs:
       - name: Build the CLI
         run: npm run build
 
-      - name: Run npm release
-        run: npm run release -- -d
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          GIT_AUTHOR_NAME: Tolgee Machine
-          GIT_AUTHOR_EMAIL: machine@tolgee.io
-          GIT_COMMITTER_NAME: Tolgee Machine
-          GIT_COMMITTER_EMAIL: machine@tolgee.io
+#      - name: Run npm release
+#        run: npm run release -- -d
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+#          GIT_AUTHOR_NAME: Tolgee Machine
+#          GIT_AUTHOR_EMAIL: machine@tolgee.io
+#          GIT_COMMITTER_NAME: Tolgee Machine
+#          GIT_COMMITTER_EMAIL: machine@tolgee.io

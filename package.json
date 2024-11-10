@@ -19,9 +19,12 @@
     "README.md",
     "LICENSE"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@azure/identity": "^4.4.1",
     "@azure/openai": "^2.0.0-beta.2",
