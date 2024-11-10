@@ -23,9 +23,6 @@ allKeys.json
 # Ignore macOS system files
 .DS_Store
 
-# Ignore npm package lock file (optional)
-package-lock.json
-
 # Ignore IDE and editor config files
 .idea/
 .vscode/
