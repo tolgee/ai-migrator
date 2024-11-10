@@ -1,33 +1,33 @@
-import { Command } from "commander";
-import { presetShape, PresetType } from "../../presets/PresetType";
-import { buildNativePreset } from "../../presets/buildNativePreset";
-import { z } from "zod";
-import logger from "../../utils/logger";
-import { FilesMigrator } from "./FilesMigrator";
+import { Command } from 'commander';
+import { presetShape, PresetType } from '../../presets/PresetType';
+import { buildNativePreset } from '../../presets/buildNativePreset';
+import { z } from 'zod';
+import logger from '../../utils/logger';
+import { FilesMigrator } from './FilesMigrator';
 
 export function addMigrationCommand(program: Command) {
   // Migrate command
   program
-    .command("migrate")
-    .description("Migrate files and upload keys to Tolgee")
+    .command('migrate')
+    .description('Migrate files and upload keys to Tolgee')
     .option(
-      "-p, --pattern <pattern>",
-      "File pattern to search for (e.g., src/**/*.tsx)",
-      "src/**/*",
+      '-p, --pattern <pattern>',
+      'File pattern to search for (e.g., src/**/*.tsx)',
+      'src/**/*'
     )
     .option(
-      "-a, --appendixPath <appendixPath>",
-      "Path to file with custom prompt appendix",
+      '-a, --appendixPath <appendixPath>',
+      'Path to file with custom prompt appendix'
     )
-    .option("-r, --preset <preset>", "Preset to use for migration", "react")
+    .option('-r, --preset <preset>', 'Preset to use for migration', 'react')
     .option(
-      "-c, --concurrency <concurrency>",
-      "Number of files to process concurrently",
-      "10",
+      '-c, --concurrency <concurrency>',
+      'Number of files to process concurrently',
+      '10'
     )
-    .option("-k, --api-key <apiKey>", "OpenAI or Azure OpenAI API key")
-    .option("-e, --endpoint <endpoint>", "Azure OpenAI endpoint")
-    .option("-d, --deployment <azureDeployment>", "Azure OpenAI deployment")
+    .option('-k, --api-key <apiKey>', 'OpenAI or Azure OpenAI API key')
+    .option('-e, --endpoint <endpoint>', 'Azure OpenAI endpoint')
+    .option('-d, --deployment <azureDeployment>', 'Azure OpenAI deployment')
     .action(async (options) => {
       // Run the migration process
       const migrator = FilesMigrator({
@@ -40,7 +40,7 @@ export function addMigrationCommand(program: Command) {
           azureApiKey: options.apiKey,
           azureEndpoint: options.endpoint,
           azureDeployment: options.deployment,
-        }
+        },
       });
 
       await migrator.migrateFiles();
@@ -61,7 +61,8 @@ function getAndValidatePreset(preset: string): PresetType {
 }
 
 function getPreset(preset: string): PresetType {
-  if (preset.endsWith(".js")) {
+  if (preset.endsWith('.js')) {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     return require(preset);
   }
 

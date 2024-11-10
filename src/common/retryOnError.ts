@@ -1,5 +1,5 @@
-import logger from "../utils/logger";
-import {sleep} from "./sleep";
+import logger from '../utils/logger';
+import { sleep } from './sleep';
 
 interface RetryOnErrorParams<T> {
   retries: number;
@@ -29,7 +29,7 @@ export async function retryOnError<T>({
     }
   }
 
-  logger.error("Retry limit exceeded after " + attempts + " attempts...");
+  logger.error('Retry limit exceeded after ' + attempts + ' attempts...');
   throw lastError!;
 }
 
@@ -54,7 +54,7 @@ export async function retryOnRateLimit<T>({
       const retryAfter = retryAfterProvider(error as Error);
       if (retryAfter && retryAfter > 0) {
         logger.info(
-          `Rate limit exceeded. Retrying after ${Math.round(retryAfter / 1000)} seconds...`,
+          `Rate limit exceeded. Retrying after ${Math.round(retryAfter / 1000)} seconds...`
         );
         await sleep(retryAfter);
         continue;

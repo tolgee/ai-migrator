@@ -1,7 +1,7 @@
-import { GetResponseProps, ResponseProvider } from "./ResponseProvider";
-import { AzureOpenAI } from "openai";
-import { chatGptResponseFormat } from "./responseFormat";
-import { PromptsProviderType } from "../PromptsProvider";
+import { GetResponseProps, ResponseProvider } from './ResponseProvider';
+import { AzureOpenAI } from 'openai';
+import { chatGptResponseFormat } from './responseFormat';
+import { PromptsProviderType } from '../PromptsProvider';
 
 export function AzureResponseProvider(providerProps: {
   config: {
@@ -21,22 +21,22 @@ export function AzureResponseProvider(providerProps: {
 
   return {
     async getResponse(
-      props: GetResponseProps,
+      props: GetResponseProps
     ): Promise<string | null | undefined> {
       const { systemPrompt, userPrompt } =
         providerProps.promptsProvider.getPrompts(props);
 
       const response = await azureClient.chat.completions.create({
-        model: "gpt-4o",
+        model: 'gpt-4o',
         response_format: chatGptResponseFormat,
         temperature: 0,
         messages: [
           {
-            role: "system",
+            role: 'system',
             content: systemPrompt,
           },
           {
-            role: "user",
+            role: 'user',
             content: userPrompt,
           },
         ],

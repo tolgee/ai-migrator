@@ -1,15 +1,15 @@
-import axios, { AxiosError, AxiosRequestConfig } from "axios";
-import { getProjectIdFromApiKey } from "./decodeApiKey";
+import axios, { AxiosError, AxiosRequestConfig } from 'axios';
+import { getProjectIdFromApiKey } from './decodeApiKey';
 
 export function TolgeeProjectClient(authProps: AuthProps) {
   const headers = {
-    "X-API-Key": authProps.apiKey,
+    'X-API-Key': authProps.apiKey,
   };
 
   async function importKeys(keys: any) {
     await request({
-      url: getUrl({ ...authProps, projectEndpoint: "keys/import" }),
-      method: "POST",
+      url: getUrl({ ...authProps, projectEndpoint: 'keys/import' }),
+      method: 'POST',
       data: { keys },
       headers,
     });
@@ -17,12 +17,12 @@ export function TolgeeProjectClient(authProps: AuthProps) {
 
   async function getBaseLanguageTag() {
     const response = await request({
-      url: getUrl({ ...authProps, projectEndpoint: "" }),
-      method: "GET",
+      url: getUrl({ ...authProps, projectEndpoint: '' }),
+      method: 'GET',
       headers,
     });
 
-    return response.data["baseLanguage"]["tag"];
+    return response.data['baseLanguage']['tag'];
   }
 
   return {
@@ -45,13 +45,13 @@ function getUrl({
   apiKey,
   projectEndpoint,
 }: AuthProps & { projectEndpoint: string }) {
-  apiUrl = apiUrl || "https://app.tolgee.io";
+  apiUrl = apiUrl || 'https://app.tolgee.io';
   const baseUrl = new URL(apiUrl);
   const origin = baseUrl.origin;
 
   // we can use passed projectId or try to get it from apiKey
   projectId = getProjectId({ apiKey, passedProjectId: projectId });
-  const endpointPath = projectEndpoint ? `/${projectEndpoint}` : "";
+  const endpointPath = projectEndpoint ? `/${projectEndpoint}` : '';
   return `${origin}/v2/projects/${projectId}${endpointPath}`;
 }
 
@@ -70,7 +70,7 @@ function getProjectId(props: {
   }
 
   throw new Error(
-    "Cannot determine project ID. Please provide it using projectId or Project API key",
+    'Cannot determine project ID. Please provide it using projectId or Project API key'
   );
 }
 

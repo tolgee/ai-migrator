@@ -1,6 +1,6 @@
-import winston from "winston";
+import winston from 'winston';
 
-const logLevel = process.env.LOG_LEVEL || "info"; // Default to "info"
+const logLevel = process.env.LOG_LEVEL || 'info'; // Default to "info"
 
 const logger = winston.createLogger({
   level: logLevel,
@@ -14,7 +14,7 @@ const logger = winston.createLogger({
       } else {
         return `[${timestamp}] ${level}: ${message}\n${stack}`;
       }
-    }),
+    })
   ),
   transports: [
     new winston.transports.Console({

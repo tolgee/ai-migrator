@@ -1,4 +1,4 @@
-import { PresetType } from "./presets/PresetType";
+import { PresetType } from './presets/PresetType';
 
 export function PromptsProvider(preset: PresetType) {
   function getPrompts({

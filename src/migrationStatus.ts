@@ -1,8 +1,8 @@
-import fsExtra from "fs-extra";
-import { getFilePaths } from "./FilePaths";
-import logger from "./utils/logger";
-import { Key } from "./responseProviders/responseFormat";
-import path from "node:path";
+import fsExtra from 'fs-extra';
+import { getFilePaths } from './FilePaths';
+import logger from './utils/logger';
+import { Key } from './responseProviders/responseFormat';
+import path from 'node:path';
 
 const { promises: fs } = fsExtra;
 
@@ -24,7 +24,7 @@ interface UpdateMigrationStatusProps {
   currentStatus: MigrationStatus;
 }
 
-let writingPromise: Promise<any> | null = Promise.resolve();
+const writingPromise: Promise<any> | null = Promise.resolve();
 
 // Function to update migration status
 export const updateMigrationStatus = async ({
@@ -47,7 +47,7 @@ export const updateMigrationStatus = async ({
   await fs.writeFile(
     statusFilePath,
     JSON.stringify(currentStatus, null, 2),
-    "utf8",
+    'utf8'
   );
 };
 
@@ -64,7 +64,7 @@ export const loadMigrationStatus = async (): Promise<MigrationStatus> => {
   }
 
   // If the file exists, load it
-  const fileContent = await fs.readFile(statusFilePath, "utf8");
+  const fileContent = await fs.readFile(statusFilePath, 'utf8');
   if (!fileContent.trim()) {
     // File is empty
     return {};
@@ -77,7 +77,7 @@ export const loadMigrationStatus = async (): Promise<MigrationStatus> => {
 // Function to check the migration status of a specific file or show the entire status
 export const checkMigrationStatus = async (
   filePath?: string,
-  showAll?: boolean,
+  showAll?: boolean
 ) => {
   try {
     const status = await loadMigrationStatus();
@@ -85,8 +85,8 @@ export const checkMigrationStatus = async (
     if (showAll) {
       // Show the entire status file
       logger.info(
-        "[migrationStatus][check] Complete migration status:",
-        status,
+        '[migrationStatus][check] Complete migration status:',
+        status
       );
     } else if (filePath) {
       // Check status for the specific file
@@ -94,22 +94,22 @@ export const checkMigrationStatus = async (
       if (fileStatus) {
         logger.info(
           `[migrationStatus][check] Migration status for ${filePath}:`,
-          fileStatus,
+          fileStatus
         );
       } else {
         logger.info(
-          `[migrationStatus][check] ${filePath} has not been migrated yet.`,
+          `[migrationStatus][check] ${filePath} has not been migrated yet.`
         );
       }
     } else {
       logger.info(
-        "[migrationStatus][check] Please provide a file to check its migration status or use the --all option to display the entire status.",
+        '[migrationStatus][check] Please provide a file to check its migration status or use the --all option to display the entire status.'
       );
     }
   } catch (error) {
     console.error(
       `[migrationStatus][check] Error checking migration status:`,
-      error,
+      error
     );
   }
 };

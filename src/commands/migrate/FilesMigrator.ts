@@ -1,13 +1,13 @@
 import {
   loadMigrationStatus,
   updateMigrationStatus,
-} from "../../migrationStatus";
-import { findFiles } from "../../findFiles";
-import { checkGitClean } from "../../common/checkGitClean";
-import logger from "../../utils/logger";
-import { PresetType } from "../../presets/PresetType";
-import { FileProcessor } from "../../FileProcessor";
-import { AiProviderOptions } from "../../responseProviders/createResponseProvider";
+} from '../../migrationStatus';
+import { findFiles } from '../../findFiles';
+import { checkGitClean } from '../../common/checkGitClean';
+import logger from '../../utils/logger';
+import { PresetType } from '../../presets/PresetType';
+import { FileProcessor } from '../../FileProcessor';
+import { AiProviderOptions } from '../../responseProviders/createResponseProvider';
 
 interface FilesMigratorProps {
   filePattern: string;
@@ -22,7 +22,7 @@ export function FilesMigrator({
   preset,
   appendixPath,
   concurrency,
-  providerOptions
+  providerOptions,
 }: FilesMigratorProps) {
   const fileProcessor = FileProcessor(preset, providerOptions);
 
@@ -34,12 +34,12 @@ export function FilesMigrator({
     const files = await findFiles(filePattern);
 
     if (!files || files.length === 0) {
-      logger.info("[cli][migrateFiles] No files found for the given pattern.");
+      logger.info('[cli][migrateFiles] No files found for the given pattern.');
       return;
     }
 
     logger.info(
-      `[cli][migrateFiles] Found ${files.length} files. Starting migration...`,
+      `[cli][migrateFiles] Found ${files.length} files. Starting migration...`
     );
 
     const fileQueue = [...files];
@@ -51,7 +51,7 @@ export function FilesMigrator({
     const processFile = async (file: string) => {
       if (status[file] && status[file].migrated) {
         logger.info(
-          `[cli][processFile] Skipping already processed file: ${file}`,
+          `[cli][processFile] Skipping already processed file: ${file}`
         );
         return;
       }
@@ -60,7 +60,7 @@ export function FilesMigrator({
         logger.info(`[FileProcessor] Processing file: ${file}`);
         const result = await fileProcessor.processFile(file, appendixPath);
         logger.info(
-          `[FileProcessor] Processed file: ${file} ✅ ${++processed}/${files.length}`,
+          `[FileProcessor] Processed file: ${file} ✅ ${++processed}/${files.length}`
         );
         await updateMigrationStatus({
           currentStatus: status,
@@ -69,7 +69,7 @@ export function FilesMigrator({
       } catch (error) {
         logger.error(
           `[cli][processFile] Error processing file: ${file}`,
-          error,
+          error
         );
         await updateMigrationStatus({
           currentStatus: status,
@@ -96,7 +96,7 @@ export function FilesMigrator({
     };
 
     await processQueue();
-    logger.info("[cli][migrateFiles] Migration completed.");
+    logger.info('[cli][migrateFiles] Migration completed.');
   };
 
   return {

@@ -1,7 +1,7 @@
-import glob from "fast-glob";
+import glob from 'fast-glob';
 
 export const findFiles = async (
-  pattern: string | string[],
+  pattern: string | string[]
 ): Promise<string[]> => {
   try {
     // Get all the files that match the patterns

@@ -1,22 +1,22 @@
-import fsExtra from "fs-extra";
-import { ChatGptResponse } from "./responseProviders/responseFormat";
-import { PresetType } from "./presets/PresetType";
+import fsExtra from 'fs-extra';
+import { ChatGptResponse } from './responseProviders/responseFormat';
+import { PresetType } from './presets/PresetType';
 import {
   AiProviderOptions,
   createResponseProvider,
-} from "./responseProviders/createResponseProvider";
-import { retryOnError, retryOnRateLimit } from "./common/retryOnError";
+} from './responseProviders/createResponseProvider';
+import { retryOnError, retryOnRateLimit } from './common/retryOnError';
 
 const { promises: fs } = fsExtra;
 
 export function FileProcessor(
   preset: PresetType,
-  providerOptions: AiProviderOptions,
+  providerOptions: AiProviderOptions
 ) {
   const responseProvider = createResponseProvider(preset, providerOptions);
 
   async function processFile(filePath: string, promptAppendixPath?: string) {
-    const fileContent = await fs.readFile(filePath, "utf-8");
+    const fileContent = await fs.readFile(filePath, 'utf-8');
     const promptAppendix = await loadPromptAppendix(promptAppendixPath);
     const result = await getResponseRetrying(fileContent, promptAppendix);
     await writeFileIfKeysExtracted(filePath, result);
@@ -25,7 +25,7 @@ export function FileProcessor(
 
   async function getResponseRetrying(
     fileContent: string,
-    promptAppendix: string,
+    promptAppendix: string
   ) {
     return await retryOnRateLimit({
       callback: async () =>
@@ -35,7 +35,7 @@ export function FileProcessor(
           errorMatcher: (e) => e instanceof SyntaxError,
         }),
       retryAfterProvider: (e: any) => {
-        if (e["status"] === 429) {
+        if (e['status'] === 429) {
           const retryAfter = 60000;
           if (!retryAfter) return undefined;
           return retryAfter;
@@ -47,12 +47,13 @@ export function FileProcessor(
 
   // Function to load prompt appendix from a file if path is provided
   async function loadPromptAppendix(filePath?: string): Promise<string> {
-    if (!filePath) return "";
+    if (!filePath) return '';
     try {
-      return await fs.readFile(filePath, "utf-8");
-    } catch (error) {
+      return await fs.readFile(filePath, 'utf-8');
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_) {
       throw new Error(
-        `[chatGPT] Error loading prompt appendix or path ${filePath}`,
+        `[chatGPT] Error loading prompt appendix or path ${filePath}`
       );
     }
   }
@@ -68,17 +69,13 @@ export function FileProcessor(
       throw new NoResponseError();
     }
 
-    try {
-      const response: ChatGptResponse = JSON.parse(responseJson);
-      return response;
-    } catch (e) {
-      throw e;
-    }
+    const response: ChatGptResponse = JSON.parse(responseJson);
+    return response;
   }
 
   async function writeFileIfKeysExtracted(
     filePath: string,
-    result: ChatGptResponse,
+    result: ChatGptResponse
   ) {
     if (result.keys.length > 0) {
       await fs.writeFile(filePath, result.newFileContents);
@@ -91,6 +88,6 @@ export function FileProcessor(
 }
 
 export class NoResponseError implements Error {
-  message: string = "No response from OpenAI";
-  name: string = "NoResponseError";
+  message: string = 'No response from OpenAI';
+  name: string = 'NoResponseError';
 }

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import logger, { setLogLevel } from "./utils/logger";
-import { createProgram } from "./program";
+import logger, { setLogLevel } from './utils/logger';
+import { createProgram } from './program';
 
 async function main() {
   const program = createProgram();

@@ -1,5 +1,5 @@
-import { TolgeeProjectClientType } from "./common/client/TolgeeProjectClient";
-import { loadMigrationStatus } from "./migrationStatus";
+import { TolgeeProjectClientType } from './common/client/TolgeeProjectClient';
+import { loadMigrationStatus } from './migrationStatus';
 
 export const uploadKeysToTolgee = async (client: TolgeeProjectClientType) => {
   const status = await loadMigrationStatus();
