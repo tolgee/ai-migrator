@@ -22,7 +22,7 @@ export function OpenAiResponseProvider({
 
       const response = await openai.chat.completions.create(
         {
-          model: "gpt-4o",
+          model: "gpt-4o-2024-08-06",
           response_format: chatGptResponseFormat,
           messages: [
             {
@@ -34,7 +34,6 @@ export function OpenAiResponseProvider({
               content: userPrompt,
             },
           ],
-          max_tokens: 1024,
         },
         {
           headers: {

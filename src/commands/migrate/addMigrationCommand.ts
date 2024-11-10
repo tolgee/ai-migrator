@@ -25,7 +25,6 @@ export function addMigrationCommand(program: Command) {
       "Number of files to process concurrently",
       "10",
     )
-    // TODO: align with Tolgee CLI
     .option("-k, --api-key <apiKey>", "OpenAI or Azure OpenAI API key")
     .option("-e, --endpoint <endpoint>", "Azure OpenAI endpoint")
     .option("-d, --deployment <azureDeployment>", "Azure OpenAI deployment")

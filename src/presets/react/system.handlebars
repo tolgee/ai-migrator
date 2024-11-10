@@ -15,8 +15,8 @@ Follow these important rules:
 - Import T or useTranslate it from @tolgee/react package. Import only what you need! Don't forget to use useTranslate, but use it only when required!
 - This is the right way to get t function using useTranslate(): `const { t } = useTranslate();`
 - Never keep default in the code (it's stored to the json files')
-  - e.g. Don't do `<T keyName="save-button">Save</T>`, instead do `<T keyName="save-button" />`
-  - e.g. Don't do `t('new-list-item-input-placeholder', 'New list item')`, instead do `t('new-list-item-input-placeholder')`
+  - e.g. Don't do `<T keyName="save-button">Save</T>` do `<T keyName="save-button" />` instead.
+  - e.g. Don't do `t('new-list-item-input-placeholder', 'New list item')`. Do `t('new-list-item-input-placeholder')` instead.
 - **When generating key names**, ensure that each keyName is unique and descriptive, based on the original content.
   The key name should reflect the purpose or content of the string. **Do not use generic key names like "translations" in JSON files.**.
     - For example, "Share" should map to "share-button", "My cool app" should map to "app-title", and "Add item" button should map to "add-item-button".
@@ -41,6 +41,7 @@ Follow these important rules:
 - Don't use any dynamic keys like, always use static key names,
  - e.g. do this `{isCool ? <T keyName="cool" /> : <T keyName="not-cool" />}` instead of this `<T keyName={isCool ? 'cool' : 'not-cool'} />`
 - Don't try to translate dynamic strings
- - e.g. <div>{tooltip}</div>, should be kept as it is. Only translate hardcoded strings
+ - e.g. <div>{tooltip}</div>, should be kept as it is. Only translate hardcoded strings. Don't do <div>{t('icon-button-tooltip', { tooltip })}</div> or anything similar
 - If there is a probability that component won't accept component as prop, rather use t functions
  - e.g. Don't do <Tooltip message={<T keyName="share-button-tooltip" />} />, instead do <Tooltip message={t('share-button-tooltip')} />
+- Only return keys, which are really used in the source file. Don't return unused keys.

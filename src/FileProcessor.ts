@@ -2,10 +2,10 @@ import fsExtra from "fs-extra";
 import { ChatGptResponse } from "./responseProviders/responseFormat";
 import { PresetType } from "./presets/PresetType";
 import {
-  createResponseProvider,
   AiProviderOptions,
+  createResponseProvider,
 } from "./responseProviders/createResponseProvider";
-import logger from "./utils/logger";
+import { retryOnError, retryOnRateLimit } from "./common/retryOnError";
 
 const { promises: fs } = fsExtra;
 
@@ -23,28 +23,26 @@ export function FileProcessor(
     return result;
   }
 
-  // TODO: Test this
-  //  retry on rate limit exceeded
   async function getResponseRetrying(
     fileContent: string,
     promptAppendix: string,
   ) {
-    const retries = 3;
-    let response: ChatGptResponse | null = null;
-    for (let i = 0; i < retries; i++) {
-      try {
-        response = await getResponse(fileContent, promptAppendix);
-        break;
-      } catch (e) {
-        if (e instanceof SyntaxError) {
-          logger.info(`Retrying on GPT response parse error...`);
-          continue;
+    return await retryOnRateLimit({
+      callback: async () =>
+        retryOnError({
+          callback: async () => getResponse(fileContent, promptAppendix),
+          retries: 3,
+          errorMatcher: (e) => e instanceof SyntaxError,
+        }),
+      retryAfterProvider: (e: any) => {
+        if (e["status"] === 429) {
+          const retryAfter = 60000;
+          if (!retryAfter) return undefined;
+          return retryAfter;
         }
-        throw e;
-      }
-    }
-
-    return response!;
+        return undefined;
+      },
+    });
   }
 
   // Function to load prompt appendix from a file if path is provided

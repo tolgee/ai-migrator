@@ -1,19 +1,19 @@
-import { migrateFiles } from "../src/commands/migrate/migrateFiles";
 import { PresetType } from "../src/presets/PresetType";
 import { validatePreset } from "../src/commands/migrate/addMigrationCommand";
-import Mock = jest.Mock;
 import { createProgram } from "../src/program";
 import path from "node:path";
 import { ZodError } from "zod";
+import Mock = jest.Mock;
+import {FilesMigrator} from "../src/commands/migrate/FilesMigrator";
 
 jest.mock("fast-glob");
-jest.mock("../src/commands/migrate/migrateFiles");
+jest.mock("../src/commands/migrate/FilesMigrator");
 
 describe("presets", () => {
   it("preset argument should work", async () => {
     runWithPreset("my-preset.js");
-    expect(migrateFiles).toHaveBeenCalledTimes(1);
-    const calls = (migrateFiles as Mock<any>).mock.calls;
+    expect(FilesMigrator).toHaveBeenCalledTimes(1);
+    const calls = (FilesMigrator as Mock<any>).mock.calls;
     const preset = calls[0][0].preset as PresetType;
     expect(() => {
       validatePreset(preset);
