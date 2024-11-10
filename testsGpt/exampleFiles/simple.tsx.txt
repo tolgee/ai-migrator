@@ -1,3 +1,5 @@
+import { T } from '@tolgee/react';
+
 export const WelcomeMessage = () => {
-  return <div>Welcome!</div>;
+  return <div><T keyName="welcome-message" /></div>;
 };

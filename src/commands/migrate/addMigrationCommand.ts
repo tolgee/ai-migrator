@@ -25,14 +25,23 @@ export function addMigrationCommand(program: Command) {
       "Number of files to process concurrently",
       "10",
     )
+    // TODO: align with Tolgee CLI
+    .option("-k, --api-key <apiKey>", "OpenAI or Azure OpenAI API key")
+    .option("-e, --endpoint <endpoint>", "Azure OpenAI endpoint")
+    .option("-d, --deployment <azureDeployment>", "Azure OpenAI deployment")
     .action(async (options) => {
-      const { pattern, appendixPath, preset, concurrency } = options;
       // Run the migration process
       const migrator = FilesMigrator({
-        filePattern: pattern,
-        preset: getAndValidatePreset(preset),
-        appendixPath: appendixPath,
-        concurrency: parseInt(concurrency),
+        filePattern: options.pattern,
+        preset: getAndValidatePreset(options.preset),
+        appendixPath: options.appendixPath,
+        concurrency: parseInt(options.concurrency),
+        providerOptions: {
+          openAiApiKey: options.apiKey,
+          azureApiKey: options.apiKey,
+          azureEndpoint: options.endpoint,
+          azureDeployment: options.deployment,
+        }
       });
 
       await migrator.migrateFiles();

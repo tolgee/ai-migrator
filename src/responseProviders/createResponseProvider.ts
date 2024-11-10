@@ -1,31 +1,36 @@
 import { ResponseProvider } from "./ResponseProvider";
 import { AzureResponseProvider } from "./AzureResponseProvider";
 import { OpenAiResponseProvider } from "./OpenAiResponseProvider";
-import dotenv from "dotenv";
 import { PromptsProvider } from "../PromptsProvider";
 import { PresetType } from "../presets/PresetType";
 
-dotenv.config();
-
-// TODO: Get rid of the environment
-const azureApiKey = process.env.AZURE_OPENAI_API_KEY;
-const azureEndpoint = process.env.AZURE_OPENAI_ENDPOINT;
-const openAiApiKey = process.env.OPENAI_API_KEY;
-
-const deployment = process.env.AZURE_OPENAI_DEPLOYMENT;
 const apiVersion = "2024-10-01-preview";
 type ApiProvider = "AZURE_OPENAI" | "OPENAI";
 
-export function createResponseProvider(preset: PresetType): ResponseProvider {
-  const apiProviderType: ApiProvider = getApiProviderType();
+export type AiProviderOptions = {
+  openAiApiKey?: string;
+  azureApiKey?: string;
+  azureEndpoint?: string;
+  azureDeployment?: string;
+};
+
+export function createResponseProvider(
+  preset: PresetType,
+  providerOptions: AiProviderOptions,
+): ResponseProvider {
+  const apiProviderType: ApiProvider = getApiProviderType(providerOptions);
   const promptsProvider = PromptsProvider(preset);
+
+  const { openAiApiKey, azureApiKey, azureEndpoint, azureDeployment } =
+    providerOptions;
+
   switch (apiProviderType) {
     case "AZURE_OPENAI":
       return AzureResponseProvider({
         config: {
           azureApiKey: azureApiKey!,
           azureEndpoint,
-          deployment,
+          deployment: azureDeployment,
           apiVersion,
         },
         promptsProvider,
@@ -38,7 +43,11 @@ export function createResponseProvider(preset: PresetType): ResponseProvider {
   }
 }
 
-function getApiProviderType(): ApiProvider {
+function getApiProviderType({
+  azureApiKey,
+  azureEndpoint,
+  openAiApiKey,
+}: AiProviderOptions): ApiProvider {
   if (azureApiKey && azureEndpoint) {
     return "AZURE_OPENAI";
   }
@@ -48,6 +57,6 @@ function getApiProviderType(): ApiProvider {
   }
 
   throw new Error(
-    "No API provider credentials specified in .env file, specify either Azure OpenAI or OpenAI credentials",
+    "No API provider credentials specified in configuration, specify either OpenAI or Azure OpenAI credentials",
   );
 }

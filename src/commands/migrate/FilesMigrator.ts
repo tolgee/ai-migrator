@@ -7,12 +7,14 @@ import { checkGitClean } from "../../common/checkGitClean";
 import logger from "../../utils/logger";
 import { PresetType } from "../../presets/PresetType";
 import { FileProcessor } from "../../FileProcessor";
+import { AiProviderOptions } from "../../responseProviders/createResponseProvider";
 
 interface FilesMigratorProps {
   filePattern: string;
   preset: PresetType;
   appendixPath?: string;
   concurrency: number;
+  providerOptions: AiProviderOptions;
 }
 
 export function FilesMigrator({
@@ -20,8 +22,9 @@ export function FilesMigrator({
   preset,
   appendixPath,
   concurrency,
+  providerOptions
 }: FilesMigratorProps) {
-  const fileProcessor = FileProcessor(preset);
+  const fileProcessor = FileProcessor(preset, providerOptions);
 
   const migrateFiles = async () => {
     if (!checkGitClean()) {

@@ -1,13 +1,19 @@
 import fsExtra from "fs-extra";
 import { ChatGptResponse } from "./responseProviders/responseFormat";
 import { PresetType } from "./presets/PresetType";
-import { createResponseProvider } from "./responseProviders/createResponseProvider";
+import {
+  createResponseProvider,
+  AiProviderOptions,
+} from "./responseProviders/createResponseProvider";
 import logger from "./utils/logger";
 
 const { promises: fs } = fsExtra;
 
-export function FileProcessor(preset: PresetType) {
-  const responseProvider = createResponseProvider(preset);
+export function FileProcessor(
+  preset: PresetType,
+  providerOptions: AiProviderOptions,
+) {
+  const responseProvider = createResponseProvider(preset, providerOptions);
 
   async function processFile(filePath: string, promptAppendixPath?: string) {
     const fileContent = await fs.readFile(filePath, "utf-8");
@@ -17,8 +23,8 @@ export function FileProcessor(preset: PresetType) {
     return result;
   }
 
-
   // TODO: Test this
+  //  retry on rate limit exceeded
   async function getResponseRetrying(
     fileContent: string,
     promptAppendix: string,

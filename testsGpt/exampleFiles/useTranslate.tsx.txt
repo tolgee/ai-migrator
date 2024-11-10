@@ -1,3 +1,6 @@
+import { useTranslate } from '@tolgee/react';
+
 export const PasswordField = () => {
-  return <input placeholder="New password" />;
+  const { t } = useTranslate();
+  return <input placeholder={t('new-password-input-placeholder')} />;
 };

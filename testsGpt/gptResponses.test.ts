@@ -1,9 +1,10 @@
 import { FileProcessor } from "../src/FileProcessor";
 import * as path from "node:path";
 import { buildNativePreset } from "../src/presets/buildNativePreset";
+import dotenv from "dotenv";
 
 describe("Chat GPT", () => {
-  const fileProcessor = FileProcessor(buildNativePreset("react"));
+  const fileProcessor = createFileProcessor();
 
   it(
     "correctly uses T component",
@@ -43,3 +44,19 @@ describe("Chat GPT", () => {
     60 * 1000,
   );
 });
+
+function createFileProcessor() {
+  dotenv.config();
+
+  const azureApiKey = process.env.AZURE_OPENAI_API_KEY;
+  const azureEndpoint = process.env.AZURE_OPENAI_ENDPOINT;
+  const openAiApiKey = process.env.OPENAI_API_KEY;
+  const deployment = process.env.AZURE_OPENAI_DEPLOYMENT;
+
+  return FileProcessor(buildNativePreset("react"), {
+    openAiApiKey,
+    azureApiKey,
+    azureEndpoint,
+    azureDeployment: deployment,
+  });
+}
