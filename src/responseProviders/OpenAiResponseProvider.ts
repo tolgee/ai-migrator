@@ -1,11 +1,14 @@
-import { GetResponseProps, ResponseProvider } from "./ResponseProvider";
-import { OpenAI } from "openai";
-import { getPrompts } from "../promptsProvider";
+import { GetResponseProps, ResponseProvider } from './ResponseProvider';
+import { OpenAI } from 'openai';
+import { PromptsProviderType } from '../PromptsProvider';
+import { chatGptResponseFormat } from './responseFormat';
 
 export function OpenAiResponseProvider({
   openAiApiKey,
+  promptsProvider,
 }: {
   openAiApiKey: string;
+  promptsProvider: PromptsProviderType;
 }): ResponseProvider {
   const openai = new OpenAI({
     apiKey: openAiApiKey,
@@ -13,31 +16,31 @@ export function OpenAiResponseProvider({
 
   return {
     async getResponse(
-      props: GetResponseProps,
+      props: GetResponseProps
     ): Promise<string | null | undefined> {
-      const { completeSystemPrompt, userPrompt } = getPrompts(props);
+      const { systemPrompt, userPrompt } = promptsProvider.getPrompts(props);
 
       const response = await openai.chat.completions.create(
         {
-          model: "gpt-4o",
+          model: 'gpt-4o-2024-08-06',
+          response_format: chatGptResponseFormat,
           messages: [
             {
-              role: "system",
-              content: completeSystemPrompt,
+              role: 'system',
+              content: systemPrompt,
             },
             {
-              role: "user",
+              role: 'user',
               content: userPrompt,
             },
           ],
-          max_tokens: 1024,
         },
         {
           headers: {
             Authorization: `Bearer ${openAiApiKey}`,
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
-        },
+        }
       );
 
       return response.choices[0]?.message.content;

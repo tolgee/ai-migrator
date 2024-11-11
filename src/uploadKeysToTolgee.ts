@@ -1,44 +1,22 @@
-import axios from "axios";
+import { TolgeeProjectClientType } from './common/client/TolgeeProjectClient';
+import { loadMigrationStatus } from './migrationStatus';
+import logger from "./utils/logger";
 
-interface KeyObject {
-  keyName: string;
-  description: string;
-  translations: { en: string };
-}
+export const uploadKeysToTolgee = async (client: TolgeeProjectClientType) => {
+  const status = await loadMigrationStatus();
 
-interface TolgeeUploadResponse {
-  success: boolean;
-  message: string;
-}
+  const allKeys = Object.values(status)
+    .map((fileStatus) => fileStatus.keys)
+    .flat();
 
-export const uploadKeysToTolgee = async (
-  keys: KeyObject[],
-): Promise<TolgeeUploadResponse> => {
-  try {
-    const formattedKeys = keys.map((key) => ({
-      keyName: key.keyName,
-      description: key.description,
-      translations: key.translations, // English as default translation
-    }));
+  const baseLanguageTag = await client.getBaseLanguageTag();
 
-    await axios.post("https://tolgee.io/api/import-keys-2", {
-      keys: formattedKeys,
-    });
+  const formattedKeys = allKeys.map((key) => ({
+    name: key.name,
+    description: key.description,
+    translations: { [baseLanguageTag]: key.default }, // English as default translation
+  }));
 
-    console.log("[uploadKeysToTolgee] Keys uploaded successfully to Tolgee.");
-    return {
-      success: true,
-      message: "Keys uploaded successfully",
-    };
-  } catch (error) {
-    console.error(
-      `[uploadKeysToTolgee] Error uploading keys to Tolgee: ${error}`,
-    );
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
-    return {
-      success: false,
-      message: `Failed to upload keys: ${errorMessage}`,
-    };
-  }
+  await client.importKeys(formattedKeys);
+  logger.info('Keys successfully uploaded to Tolgee ✅ ');
 };

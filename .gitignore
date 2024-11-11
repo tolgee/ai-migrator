@@ -23,14 +23,10 @@ allKeys.json
 # Ignore macOS system files
 .DS_Store
 
-# Ignore npm package lock file (optional)
-package-lock.json
-
 # Ignore IDE and editor config files
 .idea/
-.vscode/
+.vscode/launch.json
 *.swp
 
 # Ignore compiled TypeScript files
-*.js
-*.d.ts
+/dist

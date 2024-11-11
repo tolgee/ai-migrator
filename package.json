@@ -1,19 +1,32 @@
 {
-  "name": "ai-migrator",
-  "version": "1.0.0",
-  "description": "AI migration tool for Tolgee",
-  "main": "./src/cli.js",
+  "name": "@tolgee/ai-migrator",
+  "version": "1.0.0-alpha.4",
+  "description": "AI migration tool to migrate your project from raw string to Tolgee SDKs",
   "bin": {
-    "cli": "./dist/src/cli.js"
+    "tolgee-migrator": "./dist/src/cli.js"
   },
+  "type": "commonjs",
   "scripts": {
-    "build": "tsc",
-    "test": "jest",
-    "cli": "tsx src/cli.ts"
+    "build": "tsc && tsx scripts/copyResources.ts",
+    "test:unit": "jest tests/**",
+    "test:integration": "jest testsGpt/**",
+    "format": "eslint --fix",
+    "eslint": "eslint --max-warnings 0",
+    "release": "semantic-release",
+    "dev": "tsx src/cli.ts"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "docs"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@azure/identity": "^4.4.1",
     "@azure/openai": "^2.0.0-beta.2",
@@ -25,18 +38,20 @@
     "fast-glob": "^3.3.2",
     "fs-extra": "^11.2.0",
     "glob": "^11.0.0",
+    "handlebars": "^4.7.8",
     "inquirer": "^12.0.0",
+    "openai": "^4.68.1",
     "tsx": "^4.19.1",
-    "openai": "^4.68.1"
+    "winston": "^3.16.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@babel/preset-typescript": "^7.25.7",
-    "@eslint/js": "^9.12.0",
+    "@eslint/js": "^9.14.0",
     "@types/fs-extra": "^11.0.4",
     "@types/jest": "^29.5.13",
     "@typescript-eslint/eslint-plugin": "^8.10.0",
     "@typescript-eslint/parser": "^8.10.0",
-    "eslint": "^9.12.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
     "globals": "^15.11.0",
@@ -45,6 +60,42 @@
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.3",
-    "typescript-eslint": "^8.10.0"
+    "typescript-eslint": "^8.10.0",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "semantic-release": "^24.0.0"
+  },
+  "release": {
+    "branches": [
+      {
+        "name": "main",
+        "channel": "alpha",
+        "prerelease": "alpha"
+      },
+      {
+        "name": "next",
+        "channel": "next"
+      },
+      {
+        "name": "prerelease",
+        "channel": "rc",
+        "prerelease": "rc"
+      }
+    ],
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      [
+        "@semantic-release/git",
+        {
+          "assets": [
+            "package.json",
+            "CHANGELOG.md"
+          ]
+        }
+      ],
+      "@semantic-release/npm",
+      "@semantic-release/github"
+    ]
   }
 }

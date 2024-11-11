@@ -1,59 +1,77 @@
 import { uploadKeysToTolgee } from "../src/uploadKeysToTolgee";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
+import { TolgeeProjectClient } from "../src/common/client/TolgeeProjectClient";
+import fsExtra from "fs-extra";
 
 jest.mock("axios");
+jest.mock("fs-extra");
+
+function mockServer() {
+  jest.mocked(axios).request.mockImplementation(async (config) => {
+    if (config.url?.endsWith("projects/1000") && config.method === "GET") {
+      return {
+        data: { baseLanguage: { tag: "cs-CZ" } },
+      } as AxiosResponse;
+    }
+  });
+}
+
+function mockMigrationStatusFile() {
+  jest
+    .mocked(fsExtra.promises.readFile)
+    .mockImplementation(async (filePath) => {
+      if ((filePath as string).includes("migration-status.json")) {
+        return JSON.stringify(mockedMigrationStatus);
+      }
+      throw new Error("Unexpected file read, missing mocked implementation");
+    });
+}
 
 describe("uploadKeysToTolgee", () => {
   it("should upload keys to the Tolgee API", async () => {
-    const mockResponse = { data: { success: true } };
-    (axios.post as jest.Mock).mockResolvedValue(mockResponse);
+    mockServer();
+    mockMigrationStatusFile();
 
-    // Create an array of KeyObject matching the required structure
-    const keys = [
-      {
-        keyName: "key1",
-        description: "This is key 1",
-        translations: { en: "Key 1" },
-      },
-    ];
+    await uploadKeysToTolgee(client);
 
-    const result = await uploadKeysToTolgee(keys);
-
-    expect(axios.post).toHaveBeenCalledWith(
-      "https://tolgee.io/api/import-keys-2",
-      {
-        keys: [
-          {
-            keyName: "key1",
-            description: "This is key 1",
-            translations: { en: "Key 1" },
-          },
-        ],
-      },
+    expect(axios.request).toHaveBeenCalledWith(
+      // custom argumen matcher
+      expect.objectContaining({
+        url: "https://dummy.tolgee.io/v2/projects/1000/keys/import",
+        method: "POST",
+        data: {
+          keys: [
+            {
+              name: "key1",
+              description: "description1",
+              translations: { "cs-CZ": "default1" },
+            },
+          ],
+        },
+      }),
     );
-
-    expect(result).toEqual({
-      success: true,
-      message: "Keys uploaded successfully",
-    });
-  });
-
-  it("should handle errors during the upload", async () => {
-    (axios.post as jest.Mock).mockRejectedValue(new Error("Upload error"));
-
-    const keys = [
-      {
-        keyName: "key1",
-        description: "This is key 1",
-        translations: { en: "Key 1" },
-      },
-    ];
-
-    const result = await uploadKeysToTolgee(keys);
-
-    expect(result).toEqual({
-      success: false,
-      message: "Failed to upload keys: Upload error",
-    });
   });
 });
+
+const client = TolgeeProjectClient({
+  apiKey: "dummy_api_key",
+  apiUrl: "https://dummy.tolgee.io",
+  projectId: 1000,
+});
+
+const mockedMigrationStatus = {
+  "dummyFilepath2.tsx": {
+    migrated: true,
+    keys: [],
+  },
+  "dummyFilepath.tsx": {
+    migrated: true,
+    keys: [
+      {
+        name: "key1",
+        description: "description1",
+        default: "default1",
+      },
+    ],
+  },
+};
