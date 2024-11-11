@@ -23,7 +23,7 @@ export function addMigrationCommand(program: Command) {
     .option(
       '-c, --concurrency <concurrency>',
       'Number of files to process concurrently',
-      '10'
+      '5'
     )
     .option('-k, --api-key <apiKey>', 'OpenAI or Azure OpenAI API key')
     .option('-e, --endpoint <endpoint>', 'Azure OpenAI endpoint')

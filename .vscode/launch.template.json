@@ -1,0 +1,39 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Migrate",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/cli.ts",
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/tsx",
+      "args": [
+        "migrate",
+        "-p",
+        "src/**/*.tsx",
+        "-k",
+        "<your open api API key>"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "cwd": "<migration project dir>",
+      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**"]
+    },
+    {
+      "name": "Upload keys",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/cli.ts",
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/tsx",
+      "args": [
+        "upload-keys",
+        "-ak",
+        "<your tolgee API key>"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "cwd": "<migration project dir>",
+      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**"]
+    }
+  ]
+}

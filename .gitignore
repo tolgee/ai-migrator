@@ -25,7 +25,7 @@ allKeys.json
 
 # Ignore IDE and editor config files
 .idea/
-.vscode/
+.vscode/launch.json
 *.swp
 
 # Ignore compiled TypeScript files
