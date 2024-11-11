@@ -2,21 +2,31 @@ import fs from 'node:fs';
 import path from 'node:path';
 import Handlebars from 'handlebars';
 import { PresetType } from './PresetType';
+import { ExpectedError } from '../common/ExpectedError';
 
 export function buildNativePreset(name: string): PresetType {
   function getPromptContents(fileName: string) {
-    return fs.readFileSync(path.resolve(__dirname, name, fileName), 'utf8');
+    const presetPath = path.resolve(__dirname, name, fileName);
+    try {
+      return fs.readFileSync(presetPath, 'utf8');
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_) {
+      throw new ExpectedError(
+        `Failed to open preset file on ${presetPath}.\nDoes the ${name} preset exist?`
+      );
+    }
   }
 
+  const systemTemplateRaw = getPromptContents('system.handlebars');
+  const userTemplateRaw = getPromptContents('user.handlebars');
+
   function getSystemPrompt() {
-    const systemTemplateRaw = getPromptContents('system.handlebars');
     const systemTemplate = Handlebars.compile(systemTemplateRaw);
     return systemTemplate({});
   }
 
   function getUserPrompt(props: { fileContent: string }) {
-    const systemTemplateRaw = getPromptContents('user.handlebars');
-    const systemTemplate = Handlebars.compile(systemTemplateRaw);
+    const systemTemplate = Handlebars.compile(userTemplateRaw);
     return systemTemplate(props);
   }
 

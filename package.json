@@ -1,11 +1,14 @@
 {
   "name": "@tolgee/ai-migrator",
-  "version": "1.0.0-alpha.4",
+  "version": "1.0.0-alpha.7",
   "description": "AI migration tool to migrate your project from raw string to Tolgee SDKs",
   "bin": {
     "tolgee-migrator": "./dist/src/cli.js"
   },
-  "type": "commonjs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tolgee/ai-migrator.git"
+  },  "type": "commonjs",
   "scripts": {
     "build": "tsc && tsx scripts/copyResources.ts",
     "test:unit": "jest tests/**",
