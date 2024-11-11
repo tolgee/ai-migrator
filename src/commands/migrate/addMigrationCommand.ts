@@ -9,7 +9,7 @@ export function addMigrationCommand(program: Command) {
   // Migrate command
   program
     .command('migrate')
-    .description('Migrate files and upload keys to Tolgee')
+    .description('Migrates files and creates status file ')
     .option(
       '-p, --pattern <pattern>',
       'File pattern to search for (e.g., src/**/*.tsx)',

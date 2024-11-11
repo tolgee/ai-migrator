@@ -5,7 +5,7 @@ import { TolgeeProjectClient } from '../../common/client/TolgeeProjectClient';
 export function addUploadCommand(program: Command) {
   program
     .command('upload-keys')
-    .description('Upload the localization strings to Tolgee')
+    .description('Uploads the localization data from status file to Tolgee')
     .addOption(new Option('-au, --api-url <apiUrl>', 'Tolgee API URL'))
     .addOption(new Option('-ak, --api-key <apiKey>', 'Tolgee API key'))
     .addOption(

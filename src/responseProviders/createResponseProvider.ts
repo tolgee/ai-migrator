@@ -3,6 +3,7 @@ import { AzureResponseProvider } from './AzureResponseProvider';
 import { OpenAiResponseProvider } from './OpenAiResponseProvider';
 import { PromptsProvider } from '../PromptsProvider';
 import { PresetType } from '../presets/PresetType';
+import {ExpectedError} from "../common/ExpectedError";
 
 const apiVersion = '2024-10-01-preview';
 type ApiProvider = 'AZURE_OPENAI' | 'OPENAI';
@@ -56,7 +57,7 @@ function getApiProviderType({
     return 'OPENAI';
   }
 
-  throw new Error(
+  throw new ExpectedError(
     'No API provider credentials specified in configuration, specify either OpenAI or Azure OpenAI credentials'
   );
 }

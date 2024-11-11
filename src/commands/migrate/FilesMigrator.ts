@@ -27,9 +27,7 @@ export function FilesMigrator({
   const fileProcessor = FileProcessor(preset, providerOptions);
 
   const migrateFiles = async () => {
-    if (!checkGitClean()) {
-      return;
-    }
+    checkGitClean();
 
     const files = await findFiles(filePattern);
 

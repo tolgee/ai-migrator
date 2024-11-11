@@ -1,5 +1,6 @@
 import { TolgeeProjectClientType } from './common/client/TolgeeProjectClient';
 import { loadMigrationStatus } from './migrationStatus';
+import logger from "./utils/logger";
 
 export const uploadKeysToTolgee = async (client: TolgeeProjectClientType) => {
   const status = await loadMigrationStatus();
@@ -17,4 +18,5 @@ export const uploadKeysToTolgee = async (client: TolgeeProjectClientType) => {
   }));
 
   await client.importKeys(formattedKeys);
+  logger.info('Keys successfully uploaded to Tolgee ✅ ');
 };

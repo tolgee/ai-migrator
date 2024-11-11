@@ -1,23 +1,25 @@
 {
   "name": "@tolgee/ai-migrator",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0-alpha.4",
   "description": "AI migration tool to migrate your project from raw string to Tolgee SDKs",
   "bin": {
     "tolgee-migrator": "./dist/src/cli.js"
   },
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsx scripts/copyResources.ts",
     "test:unit": "jest tests/**",
     "test:integration": "jest testsGpt/**",
     "format": "eslint --fix",
     "eslint": "eslint --max-warnings 0",
-    "release": "semantic-release"
+    "release": "semantic-release",
+    "dev": "tsx src/cli.ts"
   },
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "docs"
   ],
   "publishConfig": {
     "access": "public"
@@ -41,10 +43,7 @@
     "openai": "^4.68.1",
     "tsx": "^4.19.1",
     "winston": "^3.16.0",
-    "zod": "^3.23.8",
-    "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/git": "^10.0.1",
-    "semantic-release": "^24.0.0"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@babel/preset-typescript": "^7.25.7",
@@ -61,7 +60,10 @@
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.3",
-    "typescript-eslint": "^8.10.0"
+    "typescript-eslint": "^8.10.0",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "semantic-release": "^24.0.0"
   },
   "release": {
     "branches": [
