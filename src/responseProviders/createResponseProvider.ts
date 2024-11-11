@@ -3,7 +3,7 @@ import { AzureResponseProvider } from './AzureResponseProvider';
 import { OpenAiResponseProvider } from './OpenAiResponseProvider';
 import { PromptsProvider } from '../PromptsProvider';
 import { PresetType } from '../presets/PresetType';
-import {ExpectedError} from "../common/ExpectedError";
+import { ExpectedError } from '../common/ExpectedError';
 
 const apiVersion = '2024-10-01-preview';
 type ApiProvider = 'AZURE_OPENAI' | 'OPENAI';

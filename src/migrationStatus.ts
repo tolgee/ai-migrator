@@ -1,6 +1,5 @@
 import fsExtra from 'fs-extra';
 import { getFilePaths } from './FilePaths';
-import logger from './utils/logger';
 import { Key } from './responseProviders/responseFormat';
 import path from 'node:path';
 
