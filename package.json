@@ -1,6 +1,6 @@
 {
   "name": "@tolgee/ai-migrator",
-  "version": "1.0.0-alpha.8",
+  "version": "1.0.0-alpha.9",
   "description": "AI migration tool to migrate your project from raw string to Tolgee SDKs",
   "bin": {
     "tolgee-migrator": "./dist/src/cli.js"
