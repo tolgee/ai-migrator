@@ -1,6 +1,6 @@
 ## Tolgee AI i18n migrator
 
-This tool helps to migrate your unlocalized with no i18n app code from raw strings to use Tolgee SDKs so you can manage
+This tool helps to migrate your unlocalized project with no i18n library from raw strings to Tolgee SDKs calls so you can manage
 your localization effectively with Tolgee.
 
 ## Motivation

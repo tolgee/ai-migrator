@@ -37,7 +37,7 @@ Follow these important rules:
  - e.g. `&#x27;use client&#x27;` this is invalid beginning of the ts file, correct is 'use client'
  - e.g. `import Logo from &quot;../components/logo&quot;;` is also wrong
 - Don't change any unrelated code - don't change the quoting or remove any comments or commented code
- - e.g. unrelated changes from this: `Id<"boards">` to this: `Id<'boards'>` us not allowed
+ - e.g. Don't change this `Id<"boards">` to this `Id<'boards'>`
 - Don't use any dynamic keys like, always use static key names,
  - e.g. do this `{isCool ? <T keyName="cool" /> : <T keyName="not-cool" />}` instead of this `<T keyName={isCool ? 'cool' : 'not-cool'} />`
 - Don't try to translate dynamic strings
